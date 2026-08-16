@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>乡芽 · 管理端 — 乡镇教育智能体原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="/vendor/echarts.min.js"></script>
+<script src="/vendor/echarts-loader.js"></script>
+<style>
+:root{
+  --bg:#F5F7FB; --bg2:#EEF2F8; --panel:#FFFFFF; --panel2:#F8FAFD;
+  --line:#E6EAF2;
+  --sky:#38BDF8; --sky-deep:#0284C7; --teal:#2DD4BF; --teal-deep:#0D9488; --blue:#60A5FA;
+  --rose:#FB7185; --rose-deep:#BE123C; --amber:#FBBF24; --amber-deep:#B45309; --green:#34D399; --green-deep:#059669;
+  --text:#1E293B; --muted:#64748B; --faint:#94A3B8;
+  --font:'Noto Sans SC',sans-serif; --num:'Outfit','Noto Sans SC',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;background-image:radial-gradient(ellipse 60% 40% at 15% 0%,rgba(56,189,248,.07),transparent),radial-gradient(ellipse 50% 35% at 85% 10%,rgba(45,212,191,.05),transparent);background-attachment:fixed}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#C6CEDD;border-radius:10px}
+.app{display:flex;min-height:100vh}
+
+/* ====== 侧边栏 ====== */
+.sidebar{width:256px;background:#FFFFFF;border-right:1px solid var(--line);position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;z-index:50}
+.sidebar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0052CC,#4A7DFF,#2DD4BF);z-index:2}
+.sidebar::after{content:'';position:absolute;left:-60px;top:150px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(0,82,204,.13),transparent 65%);pointer-events:none;z-index:0}
+.side-logo,.side-nav,.side-foot{position:relative;z-index:1}
+.side-logo{display:flex;align-items:center;gap:11px;padding:22px 20px 18px;border-bottom:1px solid var(--line)}
+.logo-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#0052CC,#0747A6);display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,82,204,.35);flex:none}
+.logo-mark .iconify{font-size:20px;color:#fff}
+.logo-name{font-size:15.5px;font-weight:900;color:#0F172A;letter-spacing:.5px}
+.logo-sub{font-size:10px;color:#9AA3B2;margin-top:2px;letter-spacing:1.5px}
+.side-nav{flex:1;overflow-y:auto;padding:14px 12px 8px}
+.nav-group{font-size:10px;letter-spacing:1.5px;color:#9AA3B2;font-weight:700;padding:16px 12px 7px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:#64748B;cursor:pointer;transition:all .2s;font-size:13.5px;font-weight:500;position:relative;user-select:none}
+.nav-item .iconify{font-size:17px;opacity:.8}
+.nav-item:hover{background:#F4F7FB;color:#0F172A}
+.nav-item.active{background:linear-gradient(90deg,#0052CC,#0747A6);color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(0,82,204,.3)}
+.nav-item.active .iconify{color:#fff;opacity:1}
+.nav-item .badge{margin-left:auto;font-size:10px;font-weight:800;background:#FEE2E2;color:#BE123C;border:1px solid #FECACA;border-radius:20px;padding:2px 7px}
+/* AI 助手卡 */
+/* AI 治理助手 · 液态玻璃 */
+.ai-card{margin:10px 12px 14px;padding:14px;position:relative;z-index:1;overflow:hidden;border-radius:16px;background:linear-gradient(150deg,rgba(255,255,255,.55),rgba(255,255,255,.14));-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);border:1px solid rgba(255,255,255,.75);box-shadow:0 10px 26px -10px rgba(13,40,90,.25),inset 0 1px 1px rgba(255,255,255,.85),inset 0 -12px 22px -10px rgba(120,160,255,.28)}
+.ai-card::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,0) 48%);pointer-events:none}
+.ai-card::after{content:'';position:absolute;right:-24px;top:-24px;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,rgba(74,125,255,.32),transparent 70%);pointer-events:none}
+.ai-card>*{position:relative;z-index:1}
+.ai-close{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:rgba(15,23,42,.06);display:grid;place-items:center;color:#64748B;font-size:12px;cursor:pointer;transition:all .2s;z-index:2}
+.ai-close:hover{background:rgba(15,23,42,.14);color:#0F172A}
+.ai-card .ai-ico{width:30px;height:30px;border-radius:9px;background:rgba(0,82,204,.12);display:grid;place-items:center;color:#0052CC;font-size:16px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,82,204,.35)}50%{box-shadow:0 0 0 7px rgba(0,82,204,0)}}
+.ai-card .ai-t{font-size:12.5px;font-weight:800;color:#0F172A;margin-top:9px}
+.ai-card .ai-d{font-size:10.5px;color:#64748B;margin-top:3px;line-height:1.6}
+.ai-card .ai-btn{margin-top:10px;width:100%;border:none;cursor:pointer;background:linear-gradient(90deg,#0052CC,#0747A6);color:#fff;font-family:var(--font);font-size:11.5px;font-weight:700;padding:8px;border-radius:9px;transition:all .2s;box-shadow:0 4px 12px rgba(0,82,204,.3)}
+.ai-card .ai-btn:hover{filter:brightness(1.1)}
+@keyframes aiOpen{0%{opacity:0;transform:scale(.86) translateY(14px);filter:blur(10px)}55%{opacity:1;transform:scale(1.03) translateY(-2px);filter:blur(0)}100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}}
+@keyframes aiClose{0%{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}100%{opacity:0;transform:scale(.92) translateY(10px);filter:blur(9px)}}
+.ai-card.ai-open{animation:aiOpen .5s cubic-bezier(.2,.9,.3,1.15) both}
+.ai-card.ai-close{animation:aiClose .3s ease-in both}
+.ai-restore-btn{width:100%;border:1px solid rgba(255,255,255,.75);background:linear-gradient(150deg,rgba(255,255,255,.6),rgba(255,255,255,.22));-webkit-backdrop-filter:blur(16px) saturate(1.7);backdrop-filter:blur(16px) saturate(1.7);border-radius:12px;padding:10px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:700;color:#0052CC;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(13,40,90,.14),inset 0 1px 1px rgba(255,255,255,.85);transition:all .22s}
+.ai-restore-btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(13,40,90,.2),inset 0 1px 1px rgba(255,255,255,.85)}
+.side-foot{padding:14px;border-top:1px solid var(--line)}
+.user-card{display:flex;align-items:center;gap:11px;background:#F8FAFD;border:1px solid var(--line);border-radius:12px;padding:11px}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0052CC,#0747A6);display:grid;place-items:center;color:#fff;font-weight:900;font-size:13px;flex:none}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:700;color:#0F172A}
+.user-role{font-size:10.5px;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ====== 主区 ====== */
+.main{flex:1;margin-left:256px;min-width:0}
+.topbar{position:sticky;top:0;z-index:40;height:62px;background:rgba(255,255,255,.85);backdrop-filter:blur(16px) saturate(1.5);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(15,23,42,.04);display:flex;align-items:center;gap:16px;padding:0 26px}
+.crumb{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.crumb b{color:#0F172A}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.tb-date{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);background:#F1F5F9;border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-family:var(--num)}
+.tb-date .iconify{color:var(--sky-deep)}
+.tb-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:#F1F5F9;border:1px solid var(--line);cursor:pointer;position:relative;transition:all .2s;color:#64748B}
+.tb-icon:hover{background:#E2E8F0;color:#0F172A}
+.tb-icon .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--rose);border:2px solid #fff;box-shadow:0 0 6px rgba(251,113,133,.6)}
+.role-switch{display:flex;background:#F1F5F9;border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.role-switch a{font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:8px;transition:all .2s}
+.role-switch a.on{background:#fff;color:#0052CC;font-weight:700;box-shadow:0 1px 3px rgba(15,23,42,.1)}
+.role-switch a:hover{color:#0369A1}
+.demo-chip{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#0D9488;background:rgba(45,212,191,.12);border:1px dashed rgba(13,148,136,.45);border-radius:20px;padding:5px 12px}
+.demo-chip .pulse{width:6px;height:6px;border-radius:50%;background:#0D9488;animation:pulseDot 1.6s infinite}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.25}}
+.content{padding:24px 26px 60px;max-width:1500px}
+.page{display:none}
+.page.on{display:block;animation:slideUp .38s ease-out}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:21px;font-weight:900;letter-spacing:.3px;color:#0F172A}
+.page-head .desc{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6}
+.src-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#0052CC;background:rgba(0,82,204,.07);border:1px solid rgba(0,82,204,.28);border-radius:20px;padding:5px 12px;margin-top:8px}
+.src-tag .iconify{font-size:13px}
+.src-tag b{color:#0052CC}
+.head-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+
+/* ====== 玻璃卡片 ====== */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 28px -14px rgba(15,23,42,.12);transition:transform .25s,border-color .25s,box-shadow .25s}
+.card-hover:hover{border-color:rgba(0,82,204,.35);transform:translateY(-3px);box-shadow:0 16px 36px -14px rgba(15,23,42,.18),0 0 0 1px rgba(0,82,204,.05)}
+.card-pad{padding:18px 20px}
+.card-head{display:flex;align-items:center;gap:10px;padding:15px 20px;border-bottom:1px solid var(--line)}
+.card-title{font-size:14.5px;font-weight:800;color:#0F172A;display:flex;align-items:center;gap:9px}
+.card-title::before{content:'';width:4px;height:16px;border-radius:4px;background:linear-gradient(180deg,#0052CC,#4A7DFF)}
+.card-title .sub{font-size:11.5px;font-weight:500;color:var(--faint)}
+.card-extra{margin-left:auto;display:flex;gap:8px;align-items:center}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:1fr 1fr}
+.g-13{grid-template-columns:1fr 1.6fr}
+.g-31{grid-template-columns:1.6fr 1fr}
+@media(max-width:1280px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}.g2,.g-13,.g-31{grid-template-columns:1fr}}
+
+/* KPI */
+.kpi{display:flex;flex-direction:column;gap:12px;padding:17px 19px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;right:-30px;bottom:-30px;width:90px;height:90px;border-radius:50%;filter:blur(22px);opacity:.14;transition:opacity .3s}
+.kpi:hover::after{opacity:.26}
+.kpi.b-sky::after{background:#38BDF8}
+.kpi.b-teal::after{background:#2DD4BF}
+.kpi.b-amber::after{background:#FBBF24}
+.kpi.b-rose::after{background:#FB7185}
+.kpi-top{display:flex;align-items:center;justify-content:space-between}
+.kpi-icon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:18px;border:1px solid var(--line)}
+.kpi-ico-sky{background:rgba(56,189,248,.14);color:#0284C7}
+.kpi-ico-teal{background:rgba(45,212,191,.14);color:#0D9488}
+.kpi-ico-amber{background:rgba(251,191,36,.16);color:#B45309}
+.kpi-ico-rose{background:rgba(251,113,133,.14);color:#BE123C}
+.kpi-label{font-size:12px;color:var(--muted);font-weight:500}
+.kpi-num{font-family:var(--num);font-size:26px;font-weight:900;letter-spacing:-.5px;line-height:1;color:#0F172A}
+.kpi-num small{font-size:12px;color:var(--faint);font-weight:600;margin-left:4px}
+.kpi-foot{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--faint)}
+.kpi-foot .up{color:var(--green-deep);font-weight:700}
+.kpi-foot .down{color:var(--rose-deep);font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;border-radius:20px;padding:3.5px 10px;border:1px solid}
+.chip-sky{background:rgba(56,189,248,.12);color:#0369A1;border-color:rgba(2,132,199,.3)}
+.chip-teal{background:rgba(45,212,191,.12);color:#0D9488;border-color:rgba(13,148,136,.3)}
+.chip-rose{background:rgba(251,113,133,.12);color:#BE123C;border-color:rgba(190,18,60,.3)}
+.chip-amber{background:rgba(251,191,36,.16);color:#B45309;border-color:rgba(180,83,9,.3)}
+.chip-green{background:rgba(52,211,153,.12);color:#059669;border-color:rgba(5,150,105,.3)}
+.chip-gray{background:#F1F5F9;color:#64748B;border-color:var(--line)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:700;border-radius:10px;padding:10px 17px;transition:all .22s;text-decoration:none}
+.btn .iconify{font-size:15px}
+.btn-sky{background:linear-gradient(135deg,#0052CC,#0747A6);color:#fff;box-shadow:0 6px 16px rgba(0,82,204,.35)}
+.btn-sky:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(56,189,248,.5)}
+.btn-ghost{background:#F8FAFD;color:#334155;border:1px solid var(--line)}
+.btn-ghost:hover{border-color:rgba(2,132,199,.4);background:#F1F5F9;color:#0369A1}
+.btn-sm{padding:7px 13px;font-size:12px;border-radius:9px}
+/* 引导式向导浮层 */
+.wiz-mask{position:fixed;inset:0;background:rgba(15,23,42,.45);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:300}
+.wiz-mask.on{display:flex}
+.wiz{width:560px;max-width:94vw;max-height:90vh;overflow:auto;background:#fff;border-radius:22px;box-shadow:0 30px 70px rgba(15,23,42,.3);animation:wizIn .38s cubic-bezier(.2,.85,.3,1.08)}
+@keyframes wizIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+.wiz-head{display:flex;align-items:center;gap:13px;padding:20px 24px 0}
+.wiz-ico{width:42px;height:42px;border-radius:13px;background:rgba(0,82,204,.1);color:#0052CC;display:grid;place-items:center;font-size:21px}
+.wiz-title{font-size:16.5px;font-weight:800;color:#0f172a}
+.wiz-sub{font-size:11.5px;color:#94A3B8;margin-top:2px}
+.wiz-x{margin-left:auto;width:30px;height:30px;border-radius:50%;background:#F1F5F9;display:grid;place-items:center;color:#64748b;cursor:pointer;font-size:15px;transition:all .2s}
+.wiz-x:hover{background:#E2E8F0;color:#0f172a}
+.wiz-steps{display:flex;gap:6px;margin:16px 24px 0}
+.wiz-steps i{height:4px;border-radius:4px;background:#E2E8F0;flex:1;transition:all .3s}
+.wiz-steps i.on{background:linear-gradient(90deg,#0052CC,#4A7DFF)}
+.wiz-body{padding:18px 24px 4px}
+.wiz-step{display:none}
+.wiz-step.on{display:block;animation:stepIn .3s ease}
+@keyframes stepIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.wiz-tip{font-size:12px;color:#94A3B8;margin-bottom:14px}
+.wiz-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px 22px}
+.wiz-q{font-size:14px;font-weight:800;color:#0f172a;margin-bottom:10px}
+.self-items{display:flex;flex-direction:column;gap:9px;max-height:46vh;overflow:auto;padding-right:4px}
+.self-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;transition:all .2s}
+.self-item:hover{border-color:#C7D2FE;background:#FAFBFF}
+.self-item.sel{border-color:#0052CC;background:rgba(0,82,204,.06);box-shadow:0 0 0 3px rgba(0,82,204,.1)}
+.self-item .si-ico{width:30px;height:30px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:15px;color:#0052CC;flex:none;box-shadow:0 2px 6px rgba(15,23,42,.06)}
+.self-item .si-name{flex:1;font-size:13px;font-weight:700;color:#0f172a}
+.self-item .si-desc{font-size:11px;color:#94A3B8;margin-top:1px}
+.si-opts{display:flex;gap:6px}
+.opt-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.opt-card{border:1.5px solid var(--line);border-radius:13px;padding:13px 10px;text-align:center;cursor:pointer;transition:all .2s}
+.opt-card:hover{border-color:#C7D2FE;background:#FAFBFF}
+.opt-card.sel{border-color:#0052CC;background:rgba(0,82,204,.06);box-shadow:0 0 0 3px rgba(0,82,204,.1)}
+.opt-card .oc-ico{font-size:22px;color:#0052CC;margin-bottom:6px}
+.opt-card .oc-t{font-size:12.5px;font-weight:800;color:#0f172a}
+.opt-card .oc-d{font-size:10.5px;color:#94A3B8;margin-top:2px}
+.wiz-gen{text-align:center;padding:34px 0 24px}
+.wiz-gen-ico{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:linear-gradient(135deg,rgba(0,82,204,.12),rgba(56,189,248,.1));display:grid;place-items:center;color:#0052CC;font-size:30px;animation:genPulse 1.2s ease infinite}
+@keyframes genPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.wiz-gen-t{font-size:13.5px;font-weight:700;color:#0f172a}
+.wiz-gen-s{font-size:11.5px;color:#94A3B8;margin-top:5px}
+.wiz-gen-bar{width:260px;height:7px;border-radius:7px;background:#EEF2F8;margin:16px auto 0;overflow:hidden}
+.wiz-gen-bar i{display:block;height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,#0052CC,#4A7DFF);transition:width .15s linear}
+.loop-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.loop-ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:21px}
+.loop-t{font-size:12.5px;font-weight:800;color:#0F172A}
+.loop-d{font-size:10.5px;color:#94A3B8;line-height:1.7}
+.loop-arrow{color:#CBD5E1;font-size:20px;flex:none}
+
+/* 表格 */
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:10.5px;font-weight:700;letter-spacing:1px;color:#94A3B8;text-align:left;padding:10px 16px;border-bottom:1px solid var(--line)}
+.table td{padding:12px 16px;border-bottom:1px solid #F1F5F9;font-size:13px;vertical-align:middle;color:#475569}
+.table tr:hover td{background:rgba(56,189,248,.05)}
+.table tr:last-child td{border-bottom:none}
+.t-cell-main{font-weight:700;color:#0F172A}
+.t-cell-sub{font-size:11px;color:var(--faint);margin-top:2px}
+.mono{font-family:var(--num);font-weight:700}
+
+/* 预警条 */
+.alert-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:12px;border:1px solid var(--line);background:#FFFFFF;margin-bottom:10px;transition:all .2s;cursor:pointer}
+.alert-row:hover{border-color:rgba(190,18,60,.45);transform:translateX(2px);box-shadow:0 4px 14px rgba(190,18,60,.08)}
+.alert-ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:none}
+.lv-high{background:rgba(251,113,133,.14);color:#BE123C}
+.lv-mid{background:rgba(251,191,36,.18);color:#B45309}
+.lv-low{background:rgba(56,189,248,.14);color:#0284C7}
+
+/* 上卷链路 */
+.flow-chain{display:flex;align-items:center;gap:10px;padding:18px 6px;flex-wrap:wrap}
+.flow-node{display:flex;flex-direction:column;align-items:center;gap:8px;padding:13px 17px;border-radius:13px;border:1px solid var(--line);background:#FFFFFF;min-width:130px;position:relative}
+.flow-node .f-ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:15px}
+.flow-node .f-name{font-size:12px;font-weight:800;color:#0F172A}
+.flow-node .f-sub{font-size:10px;color:var(--faint)}
+.flow-arrow{color:#0284C7;font-size:19px;animation:flowArrow 1.6s infinite}
+@keyframes flowArrow{0%,100%{opacity:.45;transform:translateX(0)}50%{opacity:1;transform:translateX(4px)}}
+
+/* 进度行 */
+.prow{display:flex;align-items:center;gap:12px;padding:9px 0}
+.prow+.prow{border-top:1px solid #F1F5F9}
+.prow .pname{width:110px;flex:none;font-size:12px;font-weight:600;color:#475569}
+.prow .ptrack{flex:1;height:7px;background:#EEF2F7;border-radius:6px;overflow:hidden}
+.prow .ptrack i{display:block;height:100%;border-radius:6px}
+.prow .pval{font-family:var(--num);font-size:12px;font-weight:700;width:36px;text-align:right;color:#0F172A}
+
+/* 时间线 */
+.timeline{position:relative;padding-left:26px}
+.timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:#E2E8F0}
+.tl-item{position:relative;padding:0 0 18px 14px}
+.tl-item:last-child{padding-bottom:4px}
+.tl-item::before{content:'';position:absolute;left:-26px;top:3px;width:16px;height:16px;border-radius:50%;border:3px solid #FFFFFF;box-shadow:0 0 0 2px var(--tlc);background:var(--tlb)}
+.tl-item.b-sky{--tlc:#7DD3FC;--tlb:#E0F2FE}
+.tl-item.b-teal{--tlc:#5EEAD4;--tlb:#CCFBF1}
+.tl-item.b-amber{--tlc:#FCD34D;--tlb:#FEF3C7}
+.tl-item.b-rose{--tlc:#FDA4AF;--tlb:#FFE4E6}
+.tl-title{font-size:13px;font-weight:700;color:#0F172A}
+.tl-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.65}
+.tl-time{font-size:10.5px;color:var(--faint);margin-top:4px;font-family:var(--num)}
+
+/* 教师卡 */
+.teacher-card{display:flex;gap:13px;padding:15px;border-radius:13px;border:1px solid var(--line);background:#FFFFFF;transition:all .2s;cursor:pointer}
+.teacher-card:hover{border-color:rgba(2,132,199,.4);background:#F8FAFD;box-shadow:0 6px 18px rgba(15,23,42,.07)}
+.teacher-card .ava{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:15px;flex:none}
+.t-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+/* 资源均衡对比条 */
+.eq-bar{display:flex;align-items:center;gap:10px;padding:11px 0}
+.eq-bar+.eq-bar{border-top:1px solid #F1F5F9}
+.eq-name{width:120px;flex:none;font-size:12px;font-weight:700;color:#0F172A}
+.eq-track{flex:1;display:flex;gap:3px;align-items:center}
+.eq-track .seg{height:14px;border-radius:4px;transition:width .8s ease}
+.eq-val{font-family:var(--num);font-size:12px;font-weight:700;width:44px;text-align:right;color:#475569}
+</style>
+<script defer src="/assets/legacy/admin.legacy.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ================= 侧边栏 ================= -->
+<aside class="sidebar">
+  <div class="side-logo">
+    <div class="logo-mark"><span class="iconify" data-icon="ph:plant-fill"></span></div>
+    <div>
+      <div class="logo-name">乡芽 · 管理中枢</div>
+      <div class="logo-sub">EDU GOVERNANCE</div>
+    </div>
+  </div>
+  <nav class="side-nav">
+    <div class="nav-group">数据治理</div>
+    <div class="nav-item active" data-page="overview"><span class="iconify" data-icon="ph:map-trifold"></span>区域学情看板</div>
+    <div class="nav-item" data-page="balance"><span class="iconify" data-icon="ph:scales"></span>城乡资源均衡</div>
+
+    <div class="nav-group">预警中心</div>
+    <div class="nav-item" data-page="dropout"><span class="iconify" data-icon="ph:warning-octagon"></span>控辍保学预警 <span class="badge">3</span></div>
+    <div class="nav-item" data-page="mental"><span class="iconify" data-icon="ph:heart-break"></span>心理/防欺凌预警 <span class="badge">2</span></div>
+    <div class="nav-item" data-page="teacher"><span class="iconify" data-icon="ph:user-list"></span>师资结构预警</div>
+
+    <div class="nav-group">治理闭环</div>
+    <div class="nav-item" data-page="supervise"><span class="iconify" data-icon="ph:clipboard"></span>督导任务闭环</div>
+    <div class="nav-item" data-page="profile"><span class="iconify" data-icon="ph:identification-badge"></span>教师数据画像</div>
+    <div class="nav-item" data-page="research"><span class="iconify" data-icon="ph:users-four"></span>教研活动闭环</div>
+  </nav>
+<div class="ai-card" id="aiCard">
+    <div class="ai-close" onclick="closeAiCard()" title="关闭"><span class="iconify" data-icon="ph:x"></span></div>
+    <div class="ai-ico"><span class="iconify" data-icon="ph:sparkle"></span></div>
+    <div class="ai-t">AI 治理助手</div>
+    <div class="ai-d">一键分析处置建议，或进入智能体工作台自由追问</div>
+    <button class="ai-btn" data-ai-task="overview">AI 全域盘点</button>
+    <button class="ai-btn" style="margin-top:8px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45)" data-ai-agent><span class="iconify" data-icon="ph:chat-circle-dots"></span> 智能体工作台</button>
+  </div>
+  <div id="aiRestore" style="display:none;margin:10px 12px 14px">
+    <button class="ai-restore-btn" onclick="openAiCard()"><span class="iconify" data-icon="ph:sparkle" style="font-size:15px"></span> 展开 AI 治理助手</button>
+  </div>
+  <div class="side-foot">
+    <div class="user-card">
+      <div class="avatar">周</div>
+      <div class="user-info">
+        <div class="user-name">周局长</div>
+        <div class="user-role">青石县教育局 · 基教股</div>
+      </div>
+      <span class="iconify" data-icon="ph:dots-three-outline" style="color:var(--faint);cursor:pointer;font-size:16px"></span>
+    </div>
+  </div>
+</aside>
+
+<!-- ================= 主区 ================= -->
+<main class="main">
+  <header class="topbar">
+    <div class="crumb"><span class="iconify" data-icon="ph:map-trifold"></span> 数据治理 / <b id="crumbNow">区域学情看板</b></div>
+    <div class="tb-right">
+      <div class="tb-date"><span class="iconify" data-icon="ph:calendar-dots"></span>2026-08-14 · 周五</div>
+      <div class="demo-chip"><span class="pulse"></span>DEMO 原型演示</div>
+      <div class="role-switch">
+        <a href="[object Object].html">教师</a>
+        <a href="[object Object].html">学生</a>
+        <a href="[object Object].html">家长</a>
+        <a href="[object Object].html" class="on">管理</a>
+      </div>
+      <div class="tb-icon"><span class="iconify" data-icon="ph:bell"></span><span class="dot"></span></div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ================ A1 区域学情看板 ================ -->
+    <section class="page on" id="page-overview">
+      <div class="page-head">
+        <div>
+          <h1>区域学情数据看板</h1>
+          <p class="desc">青石县 · 3 镇 18 所中小学 — 所有指标由校级数据逐级上卷聚合，可下钻至单校、单班、单题</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:flow-arrow"></span>数据血缘：D6 作答 → S3 诊断 → 校级上卷 → 区域看板（无凭空数据）</span>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost btn-sm"><span class="iconify" data-icon="ph:download-simple"></span>导出报告</button>
+          <button class="btn btn-sky btn-sm" data-ai-task="region"><span class="iconify" data-icon="ph:sparkle"></span>AI 区域诊断</button>
+        </div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:16px">
+        <div class="card kpi b-sky">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-sky"><span class="iconify" data-icon="ph:buildings"></span></div><span class="chip chip-sky">覆盖 100%</span></div>
+          <div><div class="kpi-num">18<small>所</small></div><div class="kpi-label">接入学校</div></div>
+          <div class="kpi-foot"><span class="up">3 镇全覆盖</span> · 村小 12 所</div>
+        </div>
+        <div class="card kpi b-teal">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-teal"><span class="iconify" data-icon="ph:users-three"></span></div><span class="chip chip-teal">本周 +4.2%</span></div>
+          <div><div class="kpi-num">6,842<small>人</small></div><div class="kpi-label">本周活跃学生</div></div>
+          <div class="kpi-foot"><span class="up">作答 48,296 次</span></div>
+        </div>
+        <div class="card kpi b-amber">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:target"></span></div><span class="chip chip-amber">+2.1%</span></div>
+          <div><div class="kpi-num">76.8<small>%</small></div><div class="kpi-label">区域平均掌握度</div></div>
+          <div class="kpi-foot"><span class="up">较上月提升 2.1pct</span></div>
+        </div>
+        <div class="card kpi b-rose">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-rose"><span class="iconify" data-icon="ph:warning"></span></div><span class="chip chip-rose">需处置</span></div>
+          <div><div class="kpi-num">5<small>条</small></div><div class="kpi-label">高优先级预警</div></div>
+          <div class="kpi-foot"><span class="down">控辍 3 · 心理 2</span></div>
+        </div>
+      </div>
+
+      <!-- 数据上卷链路 -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head"><div class="card-title">数据上卷链路 <span class="sub">点击任意节点可下钻</span></div>
+          <div class="card-extra"><span class="chip chip-teal"><span class="iconify" data-icon="ph:pulse"></span>实时同步中</span></div></div>
+        <div class="flow-chain">
+          <div class="flow-node" onclick="toast('已下钻至单题作答明细')"><div class="f-ico kpi-ico-teal"><span class="iconify" data-icon="ph:pencil-simple-line"></span></div><div class="f-name">学生作答</div><div class="f-sub">48,296 次/周</div></div>
+          <span class="flow-arrow iconify" data-icon="ph:caret-double-right"></span>
+          <div class="flow-node" onclick="toast('已下钻至班级诊断')"><div class="f-ico kpi-ico-sky"><span class="iconify" data-icon="ph:chart-donut"></span></div><div class="f-name">认知诊断</div><div class="f-sub">BKT/DKT 模型</div></div>
+          <span class="flow-arrow iconify" data-icon="ph:caret-double-right"></span>
+          <div class="flow-node" onclick="toast('已下钻至 18 所学校明细')"><div class="f-ico kpi-ico-amber"><span class="iconify" data-icon="ph:buildings"></span></div><div class="f-name">校级聚合</div><div class="f-sub">18 所学校</div></div>
+          <span class="flow-arrow iconify" data-icon="ph:caret-double-right"></span>
+          <div class="flow-node" style="border-color:rgba(56,189,248,.5);box-shadow:0 0 24px rgba(56,189,248,.15)"><div class="f-ico kpi-ico-teal"><span class="iconify" data-icon="ph:map-trifold"></span></div><div class="f-name">区域看板</div><div class="f-sub">治理决策视图</div></div>
+        </div>
+      </div>
+
+      <div class="grid g-31" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">各校掌握度分布</div><div class="card-extra"><span class="chip chip-gray">校级平均</span></div></div>
+          <div style="padding:10px 20px 16px;height:248px" id="schoolBar"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">掌握度构成 <span class="sub">区域聚合</span></div></div>
+          <div style="padding:14px 20px;height:238px" id="donut"></div>
+          <div style="padding:0 20px 18px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)"><i style="width:9px;height:9px;border-radius:3px;background:#34D399;display:inline-block"></i>扎实 46%</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)"><i style="width:9px;height:9px;border-radius:3px;background:#38BDF8;display:inline-block"></i>巩固 31%</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)"><i style="width:9px;height:9px;border-radius:3px;background:#FBBF24;display:inline-block"></i>薄弱 15%</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)"><i style="width:9px;height:9px;border-radius:3px;background:#FB7185;display:inline-block"></i>需补强 8%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">本周区域预警速览 <span class="chip chip-rose">5 条高优</span></div>
+            <div class="card-extra"><button class="btn btn-ghost btn-sm" onclick="goPage('dropout')">进入预警中心</button></div></div>
+          <div style="padding:14px 20px">
+            <div class="alert-row" style="margin-bottom:8px" onclick="goPage('dropout')">
+              <div class="alert-ico lv-high"><span class="iconify" data-icon="ph:warning-octagon"></span></div>
+              <div style="flex:1"><div class="t-cell-main">双桥村小学 · 3 名学生连续 10 日未作答</div><div class="t-cell-sub">辍学风险指数 82 · 已通知班主任家访</div></div>
+              <span class="chip chip-rose">高危</span>
+            </div>
+            <div class="alert-row" style="margin-bottom:8px" onclick="goPage('mental')">
+              <div class="alert-ico lv-mid"><span class="iconify" data-icon="ph:heart-break"></span></div>
+              <div style="flex:1"><div class="t-cell-main">青石镇中学 · 2 名学生异常作答模式</div><div class="t-cell-sub">疑似情绪低谷 · 轻提醒已触发 · 待班主任确认</div></div>
+              <span class="chip chip-amber">中危</span>
+            </div>
+            <div class="alert-row" onclick="goPage('dropout')">
+              <div class="alert-ico lv-low"><span class="iconify" data-icon="ph:trend-down"></span></div>
+              <div style="flex:1"><div class="t-cell-main">梅岭小学 · 周活跃度下降 18%</div><div class="t-cell-sub">农忙期出勤波动 · 持续观察中</div></div>
+              <span class="chip chip-sky">观察</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">区域作答活跃趋势 <span class="sub">近 4 周</span></div></div>
+          <div style="padding:10px 16px 14px;height:236px" id="trendArea"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ A7 城乡资源均衡 ================ -->
+    <section class="page" id="page-balance">
+      <div class="page-head">
+        <div>
+          <h1>城乡资源均衡对比</h1>
+          <p class="desc">镇中心校 / 乡村教学点双轨对比 — 资源缺口由数据说话，缺口自动进入督导任务池</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据源：D7 资源台账 · 师资台账 · 设备物联上报</span>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-sky btn-sm" data-ai-task="balance"><span class="iconify" data-icon="ph:chart-bar"></span>AI 均衡分析</button>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-bottom:16px">
+        <div class="card kpi b-sky">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-sky"><span class="iconify" data-icon="ph:scales"></span></div><span class="chip chip-sky">差距收窄中</span></div>
+          <div><div class="kpi-num">0.78<small>基尼</small></div><div class="kpi-label">资源均衡系数（越近 1 越均衡）</div></div>
+          <div class="kpi-foot"><span class="up">较上季 +0.06</span></div>
+        </div>
+        <div class="card kpi b-amber">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:user-minus"></span></div><span class="chip chip-amber">缺 11 人</span></div>
+          <div><div class="kpi-num">1:12.4<small> 师生比</small></div><div class="kpi-label">乡村教学点（城区 1:18）</div></div>
+          <div class="kpi-foot"><span class="down">英语/音体美缺口最大</span></div>
+        </div>
+        <div class="card kpi b-teal">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-teal"><span class="iconify" data-icon="ph:monitor-arrow-up"></span></div><span class="chip chip-teal">智慧课堂 92%</span></div>
+          <div><div class="kpi-num">31<small>间</small></div><div class="kpi-label">乡村教室多媒体设备在线</div></div>
+          <div class="kpi-foot"><span class="up">物联上报 · 双师课堂可用</span></div>
+        </div>
+      </div>
+
+      <div class="grid g-13" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">城乡资源对比</div><div class="card-extra"><span class="chip chip-sky">城区</span><span class="chip chip-amber" style="margin-left:6px">乡村</span></div></div>
+          <div style="padding:16px 20px 20px;height:256px" id="eqChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">乡村教学点缺口清单 <span class="sub">自动入督导池</span></div></div>
+          <div style="padding:8px 16px 16px">
+            <div class="alert-row" style="margin-bottom:8px" onclick="toast('缺口已自动转为督导任务')">
+              <div class="alert-ico lv-high"><span class="iconify" data-icon="ph:user-list"></span></div>
+              <div style="flex:1"><div class="t-cell-main">英语专任教师缺口</div><div class="t-cell-sub">9 个教学点无专职英语教师 · 双师课堂覆盖 61%</div></div>
+              <span class="chip chip-rose">-6 人</span>
+            </div>
+            <div class="alert-row" style="margin-bottom:8px" onclick="toast('缺口已自动转为督导任务')">
+              <div class="alert-ico lv-mid"><span class="iconify" data-icon="ph:music-notes"></span></div>
+              <div style="flex:1"><div class="t-cell-main">音体美师资不足</div><div class="t-cell-sub">7 所村小音体美课程由语数教师兼任</div></div>
+              <span class="chip chip-amber">-3 人</span>
+            </div>
+            <div class="alert-row" onclick="toast('缺口已自动转为督导任务')">
+              <div class="alert-ico lv-low"><span class="iconify" data-icon="ph:wifi-slash"></span></div>
+              <div style="flex:1"><div class="t-cell-main">3 所教学点网络不稳</div><div class="t-cell-sub">双师课堂平均掉线 2.3 次/节</div></div>
+              <span class="chip chip-sky">待改善</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">双师课堂 · 以城带乡执行情况 <span class="sub">师资共享闭环</span></div></div>
+        <div style="padding:16px 20px">
+          <div class="prow"><div class="pname">名师结对</div><div class="ptrack"><i style="width:88%;background:linear-gradient(90deg,#38BDF8,#2DD4BF)"></i></div><div class="pval">88%</div></div>
+          <div class="prow"><div class="pname">双师开课</div><div class="ptrack"><i style="width:76%;background:linear-gradient(90deg,#38BDF8,#2DD4BF)"></i></div><div class="pval">76%</div></div>
+          <div class="prow"><div class="pname">乡村接受度</div><div class="ptrack"><i style="width:91%;background:linear-gradient(90deg,#38BDF8,#2DD4BF)"></i></div><div class="pval">91%</div></div>
+          <div class="prow"><div class="pname">课后闭环率</div><div class="ptrack"><i style="width:64%;background:linear-gradient(90deg,#FBBF24,#FB7185)"></i></div><div class="pval">64%</div></div>
+          <div style="font-size:11.5px;color:var(--faint);margin-top:12px;display:flex;align-items:center;gap:6px"><span class="iconify" data-icon="ph:info"></span> 课后闭环率偏低：乡村端缺少助教跟进，已生成改进任务 → 督导闭环</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ A3 控辍保学预警 ================ -->
+    <section class="page" id="page-dropout">
+      <div class="page-head">
+        <div>
+          <h1>控辍保学预警</h1>
+          <p class="desc">由学习行为数据识别辍学风险，联动家访处置 — 每一条预警都有闭环记录，杜绝"数据孤岛"</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:flow-arrow"></span>数据血缘：D6 登录/作答/连读记录 → 辍学风险模型 → 预警 → 处置闭环</span>
+        </div>
+        <div class="head-actions">
+          <span class="chip chip-rose" style="padding:8px 14px">高危 3 · 中危 4 · 观察 7</span>
+          <button class="btn btn-sky btn-sm" data-ai-task="dropout"><span class="iconify" data-icon="ph:sparkle"></span>AI 控辍分析</button>
+          <button class="btn btn-ghost btn-sm" onclick="toast('已推送本周风险周报')"><span class="iconify" data-icon="ph:paper-plane-tilt"></span>推送周报</button>
+        </div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:16px">
+        <div class="card kpi b-rose">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-rose"><span class="iconify" data-icon="ph:user-minus"></span></div><span class="chip chip-rose">本周</span></div>
+          <div><div class="kpi-num">3<small>人</small></div><div class="kpi-label">高危辍学风险</div></div>
+          <div class="kpi-foot">连续缺勤 ≥ 7 天</div>
+        </div>
+        <div class="card kpi b-amber">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:trend-down"></span></div><span class="chip chip-amber">-42%</span></div>
+          <div><div class="kpi-num">11<small>人</small></div><div class="kpi-label">风险总人数</div></div>
+          <div class="kpi-foot"><span class="up">环比下降 42%</span> · 治理有效</div>
+        </div>
+        <div class="card kpi b-sky">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-sky"><span class="iconify" data-icon="ph:house-line"></span></div><span class="chip chip-sky">本月</span></div>
+          <div><div class="kpi-num">12<small>次</small></div><div class="kpi-label">家访处置</div></div>
+          <div class="kpi-foot">完成率 100% · 全程留痕</div>
+        </div>
+        <div class="card kpi b-teal">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-teal"><span class="iconify" data-icon="ph:check-circle"></span></div><span class="chip chip-teal">本学年</span></div>
+          <div><div class="kpi-num">0<small>人</small></div><div class="kpi-label">实际辍学</div></div>
+          <div class="kpi-foot">辍学率为 0 · 动态清零</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head"><div class="card-title">高优先级风险学生</div><div class="card-extra"><span class="chip chip-gray">按风险指数排序</span></div></div>
+        <table class="table">
+          <tr><th>学生</th><th>学校/班级</th><th>风险信号</th><th>风险指数</th><th>处置状态</th></tr>
+          <tr>
+            <td><div class="t-cell-main">陈浩</div><div class="t-cell-sub">五年级 2 班 · 学号 20220118</div></td>
+            <td>双桥村小学</td>
+            <td>连续 10 日未登录 · 3 周无作答 · 家访未联系上</td>
+            <td><span class="chip chip-rose">82 高危</span></td>
+            <td><span class="chip chip-amber">班主任家访中</span></td>
+          </tr>
+          <tr>
+            <td><div class="t-cell-main">吴雨欣</div><div class="t-cell-sub">四年级 1 班 · 学号 20230105</div></td>
+            <td>青石镇中心小学</td>
+            <td>缺勤 8 天 · 与家长失联 · 曾表示想外出务工</td>
+            <td><span class="chip chip-rose">78 高危</span></td>
+            <td><span class="chip chip-sky">镇村联动劝返</span></td>
+          </tr>
+          <tr>
+            <td><div class="t-cell-main">刘星宇</div><div class="t-cell-sub">六年级 3 班 · 学号 20200127</div></td>
+            <td>梅岭小学</td>
+            <td>连续缺勤 7 天 · 成绩下滑 30% · 家庭经济波动</td>
+            <td><span class="chip chip-rose">74 高危</span></td>
+            <td><span class="chip chip-gray">待分配</span></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">处置闭环时间线 <span class="sub">陈浩 · 双桥村小学</span></div></div>
+          <div style="padding:20px">
+            <div class="timeline">
+              <div class="tl-item b-teal"><div class="tl-title">风险识别</div><div class="tl-sub">连续 10 日未登录，风险模型自动触发预警，通知班主任与校长</div><div class="tl-time">08-11 20:03 · 系统自动</div></div>
+              <div class="tl-item b-sky"><div class="tl-title">班主任家访</div><div class="tl-sub">电话 3 次未接 → 上门家访，家中无人，邻居反馈外出打工</div><div class="tl-time">08-12 09:30 · 班主任 张敏</div></div>
+              <div class="tl-item b-amber"><div class="tl-title">镇村联动</div><div class="tl-sub">联系村委找到家长电话，确认在县城工地，约定周末回访</div><div class="tl-time">08-13 15:00 · 村委 协助</div></div>
+              <div class="tl-item b-rose"><div class="tl-title">待办：回访确认</div><div class="tl-sub">周末回访 · 确认就学意愿 · 若需资助可申请补助通道</div><div class="tl-time">08-15 预计 · 班主任</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">风险信号构成 <span class="sub">模型可解释</span></div></div>
+          <div style="padding:10px 20px 16px;height:248px" id="dropoutBar"></div>
+          <div style="padding:0 20px 18px;font-size:11.5px;color:var(--faint);display:flex;align-items:center;gap:6px"><span class="iconify" data-icon="ph:shield-check"></span> 模型输出附带 5 条可解释规则 · 无黑箱结论</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ A4 心理/防欺凌预警 ================ -->
+    <section class="page" id="page-mental">
+      <div class="page-head">
+        <div>
+          <h1>心理健康 · 防欺凌预警</h1>
+          <p class="desc">学习行为 + 社交交互双通道信号，只做轻提醒 — 所有预警仅推送给班主任与心理老师，保护学生隐私</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据源：S3 诊断作答情绪态 · 辅导对话风险词 · 校园社交交互（脱敏）</span>
+        </div>
+        <div class="head-actions">
+          <span class="chip chip-rose" style="padding:8px 14px">高关注 2 · 关注 5</span>
+          <button class="btn btn-sky btn-sm" data-ai-task="mental"><span class="iconify" data-icon="ph:sparkle"></span>AI 心理分析</button>
+          <button class="btn btn-ghost btn-sm" onclick="toast('心理预警周报已加密推送至校长')"><span class="iconify" data-icon="ph:lock-key"></span>加密推送周报</button>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-bottom:16px">
+        <div class="card kpi b-rose">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-rose"><span class="iconify" data-icon="ph:heart-break"></span></div><span class="chip chip-rose">本周新增</span></div>
+          <div><div class="kpi-num">2<small>人</small></div><div class="kpi-label">情绪低谷信号</div></div>
+          <div class="kpi-foot">作答延迟↑ · 情感词消极</div>
+        </div>
+        <div class="card kpi b-amber">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:handshake"></span></div><span class="chip chip-amber">本周新增</span></div>
+          <div><div class="kpi-num">1<small>起</small></div><div class="kpi-label">疑似欺凌线索</div></div>
+          <div class="kpi-foot">AI 辅导员对话风险词命中</div>
+        </div>
+        <div class="card kpi b-teal">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-teal"><span class="iconify" data-icon="ph:chats"></span></div><span class="chip chip-teal">本月</span></div>
+          <div><div class="kpi-num">23<small>次</small></div><div class="kpi-label">班主任谈心介入</div></div>
+          <div class="kpi-foot">跟进率 100% · 学生状态稳定</div>
+        </div>
+      </div>
+
+      <div class="grid g-31" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">关注名单</div><div class="card-extra"><span class="chip chip-gray">脱敏展示</span></div></div>
+          <div style="padding:14px 16px 16px">
+            <div class="alert-row" style="margin-bottom:8px" onclick="toast('已通知班主任 · 进入谈心计划')">
+              <div class="alert-ico lv-high"><span class="iconify" data-icon="ph:heart-break"></span></div>
+              <div style="flex:1"><div class="t-cell-main">李** · 青石镇中心小学 六3班</div><div class="t-cell-sub">连续 5 次诊断作答时间显著变慢 · 消极情感词 12 处</div></div>
+              <span class="chip chip-rose">高关注</span>
+            </div>
+            <div class="alert-row" style="margin-bottom:8px" onclick="toast('已通知心理老师 · 低强度干预')">
+              <div class="alert-ico lv-mid"><span class="iconify" data-icon="ph:handshake"></span></div>
+              <div style="flex:1"><div class="t-cell-main">王** · 双桥村小学 五2班</div><div class="t-cell-sub">AI 辅导对话出现被孤立描述 · 未达欺凌阈值 · 持续观察</div></div>
+              <span class="chip chip-amber">关注</span>
+            </div>
+            <div class="alert-row" onclick="toast('已通知班主任 · 轻提醒')">
+              <div class="alert-ico lv-low"><span class="iconify" data-icon="ph:watch"></span></div>
+              <div style="flex:1"><div class="t-cell-main">张** · 梅岭小学 四1班</div><div class="t-cell-sub">单次情绪低谷 · 次日作答恢复 · 仅记录不打扰</div></div>
+              <span class="chip chip-sky">轻提醒</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">预警分级策略 <span class="sub">最小打扰原则</span></div></div>
+          <div style="padding:20px">
+            <div class="timeline">
+              <div class="tl-item b-teal"><div class="tl-title">轻提醒 · 系统观察</div><div class="tl-sub">单次异常信号 → 仅记录，自动观察 3 天</div></div>
+              <div class="tl-item b-sky"><div class="tl-title">关注 · 班主任介入</div><div class="tl-sub">多次信号 → 通知班主任谈心，7 天内跟进反馈</div></div>
+              <div class="tl-item b-amber"><div class="tl-title">高关注 · 心理老师</div><div class="tl-sub">信号持续或增强 → 心理老师 1 对 1，保护性陪伴</div></div>
+              <div class="tl-item b-rose"><div class="tl-title">紧急 · 联动干预</div><div class="tl-sub">严重风险 → 校长 + 心理老师 + 家长联动，24h 内响应</div></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--faint);margin-top:10px;display:flex;align-items:center;gap:6px"><span class="iconify" data-icon="ph:lock"></span> 预警全链路加密 · 家长端只显示陪伴建议，不显示诊断细节</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ A2 师资结构预警 ================ -->
+    <section class="page" id="page-teacher">
+      <div class="page-head">
+        <div>
+          <h1>师资结构预警</h1>
+          <p class="desc">师资年龄 / 学科 / 学历三维结构分析 — 结构性缺口自动生成师资补充与培训建议</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据源：D7 师资台账 · D4 教师发展记录</span>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-sky btn-sm" data-ai-task="teacher"><span class="iconify" data-icon="ph:sparkle"></span>AI 师资分析</button>
+        </div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:16px">
+        <div class="card kpi b-amber">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:user-list"></span></div><span class="chip chip-amber">全县</span></div>
+          <div><div class="kpi-num">386<small>人</small></div><div class="kpi-label">专任教师</div></div>
+          <div class="kpi-foot">村小 214 人 · 镇中 172 人</div>
+        </div>
+        <div class="card kpi b-rose">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-rose"><span class="iconify" data-icon="ph:clock-countdown"></span></div><span class="chip chip-rose">预警</span></div>
+          <div><div class="kpi-num">17<small>人</small></div><div class="kpi-label">5 年内退休教师</div></div>
+          <div class="kpi-foot">其中骨干 9 人 · 需提前补充</div>
+        </div>
+        <div class="card kpi b-sky">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-sky"><span class="iconify" data-icon="ph:books"></span></div><span class="chip chip-sky">缺口</span></div>
+          <div><div class="kpi-num">11<small>人</small></div><div class="kpi-label">紧缺学科缺口</div></div>
+          <div class="kpi-foot">英语 6 · 音体美 5</div>
+        </div>
+        <div class="card kpi b-teal">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-teal"><span class="iconify" data-icon="ph:graduation-cap"></span></div><span class="chip chip-teal">持续提升</span></div>
+          <div><div class="kpi-num">61<small>%</small></div><div class="kpi-label">本科及以上学历</div></div>
+          <div class="kpi-foot"><span class="up">三年前 47%</span></div>
+        </div>
+      </div>
+
+      <div class="grid g-13" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">年龄结构分布</div></div>
+          <div style="padding:10px 16px 14px;height:240px" id="ageChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">结构性预警</div></div>
+          <div style="padding:14px 16px 16px">
+            <div class="alert-row" style="margin-bottom:8px">
+              <div class="alert-ico lv-high"><span class="iconify" data-icon="ph:user-minus"></span></div>
+              <div style="flex:1"><div class="t-cell-main">英语师资断层</div><div class="t-cell-sub">40+ 岁骨干 3 年内退休 · 年轻英语教师仅 2 名在岗</div></div>
+              <span class="chip chip-rose">紧急</span>
+            </div>
+            <div class="alert-row" style="margin-bottom:8px">
+              <div class="alert-ico lv-mid"><span class="iconify" data-icon="ph:music-notes"></span></div>
+              <div style="flex:1"><div class="t-cell-main">村小音体美兼任比例高</div><div class="t-cell-sub">73% 音体美课时由语数教师兼任</div></div>
+              <span class="chip chip-amber">关注</span>
+            </div>
+            <div class="alert-row">
+              <div class="alert-ico lv-low"><span class="iconify" data-icon="ph:chart-line-up"></span></div>
+              <div style="flex:1"><div class="t-cell-main">双师课堂缓解缺口</div><div class="t-cell-sub">名师结对 88% · 建议扩展至音体美</div></div>
+              <span class="chip chip-sky">建议</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ A5 督导任务闭环 ================ -->
+    <section class="page" id="page-supervise">
+      <div class="page-head">
+        <div>
+          <h1>督导任务闭环</h1>
+          <p class="desc">预警 → 派单 → 处置 → 复核 → 归档，全链路留痕 — 每项任务可追溯谁做的、怎么做的、结果如何</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:flow-arrow"></span>闭环血缘：预警工单 → 责任到人 → 处置记录 → 复核验收 → 归档</span>
+        </div>
+        <div class="head-actions">
+          <span class="chip chip-teal" style="padding:8px 14px">闭环率 94%</span>
+          <button class="btn btn-sky btn-sm" onclick="toast('已新建督导任务')"><span class="iconify" data-icon="ph:plus"></span>新建任务</button>
+        </div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:16px">
+        <div class="card kpi b-sky">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-sky"><span class="iconify" data-icon="ph:list-checks"></span></div><span class="chip chip-sky">本月</span></div>
+          <div><div class="kpi-num">18<small>项</small></div><div class="kpi-label">督导任务</div></div>
+          <div class="kpi-foot">其中 14 项由预警自动生成</div>
+        </div>
+        <div class="card kpi b-teal">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-teal"><span class="iconify" data-icon="ph:check-square"></span></div><span class="chip chip-teal">已闭环</span></div>
+          <div><div class="kpi-num">17<small>项</small></div><div class="kpi-label">已完成归档</div></div>
+          <div class="kpi-foot">平均处置时长 2.6 天</div>
+        </div>
+        <div class="card kpi b-amber">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:hourglass-medium"></span></div><span class="chip chip-amber">进行中</span></div>
+          <div><div class="kpi-num">1<small>项</small></div><div class="kpi-label">待复核</div></div>
+          <div class="kpi-foot">陈浩家访回访确认</div>
+        </div>
+        <div class="card kpi b-rose">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-rose"><span class="iconify" data-icon="ph:warning-diamond"></span></div><span class="chip chip-rose">逾期</span></div>
+          <div><div class="kpi-num">0<small>项</small></div><div class="kpi-label">逾期未处置</div></div>
+          <div class="kpi-foot">连续 30 天无逾期 · 良好</div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">进行中任务</div></div>
+          <div style="padding:14px 16px 16px">
+            <div class="alert-row" style="margin-bottom:8px">
+              <div class="alert-ico lv-high"><span class="iconify" data-icon="ph:house-line"></span></div>
+              <div style="flex:1"><div class="t-cell-main">陈浩同学周末家访回访</div><div class="t-cell-sub">来源：控辍预警工单 #0823 · 责任人：张敏（班主任）</div></div>
+              <span class="chip chip-amber">复核中</span>
+            </div>
+            <div class="alert-row" style="margin-bottom:8px">
+              <div class="alert-ico lv-mid"><span class="iconify" data-icon="ph:monitor"></span></div>
+              <div style="flex:1"><div class="t-cell-main">梅岭小学网络设备巡检</div><div class="t-cell-sub">来源：资源均衡缺口 · 责任人：电教中心</div></div>
+              <span class="chip chip-sky">处置中</span>
+            </div>
+            <div class="alert-row">
+              <div class="alert-ico lv-low"><span class="iconify" data-icon="ph:books"></span></div>
+              <div style="flex:1"><div class="t-cell-main">英语教师招聘需求上报</div><div class="t-cell-sub">来源：师资结构预警 · 责任人：人事股</div></div>
+              <span class="chip chip-gray">已派单</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">闭环流程 <span class="sub">五步留痕</span></div></div>
+          <div style="padding:20px">
+            <div class="timeline">
+              <div class="tl-item b-teal"><div class="tl-title">① 预警自动派单</div><div class="tl-sub">模型触发 → 生成工单 → 按职责自动派给责任人</div></div>
+              <div class="tl-item b-sky"><div class="tl-title">② 处置留痕</div><div class="tl-sub">家访记录 / 维修单 / 谈话记录全部上传系统</div></div>
+              <div class="tl-item b-amber"><div class="tl-title">③ 复核验收</div><div class="tl-sub">局督导股复核处置质量，未达标打回重办</div></div>
+              <div class="tl-item b-rose"><div class="tl-title">④ 效果追踪</div><div class="tl-sub">30 天后自动复查风险是否复发</div></div>
+              <div class="tl-item b-teal"><div class="tl-title">⑤ 归档沉淀</div><div class="tl-sub">案例沉淀为治理知识库 · 反哺模型</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ A6 教师数据画像 ================ -->
+    <section class="page" id="page-profile">
+      <div class="page-head">
+        <div>
+          <h1>教师数据画像</h1>
+          <p class="desc">从教学、发展、担当、口碑四个维度为教师画像 — 数据客观、不排名、只用于赋能与评优参考</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据源：D4 发展记录 · 教学数据 · 师生互评（脱敏）</span>
+        </div>
+        <div class="head-actions">
+          <div class="tb-date" style="cursor:pointer" onclick="toast('已按学科筛选：全部')"><span class="iconify" data-icon="ph:funnel"></span>全部学科</div>
+          <button class="btn btn-ghost btn-sm" onclick="toast('已导出教师画像数据包')"><span class="iconify" data-icon="ph:export"></span>导出</button>
+        </div>
+      </div>
+
+      <div class="grid g3" style="margin-bottom:16px">
+        <div class="teacher-card" onclick="toast('正在打开 王秀兰 老师画像')">
+          <div class="ava" style="background:linear-gradient(135deg,#38BDF8,#2DD4BF);color:#04121f">王</div>
+          <div style="flex:1">
+            <div class="t-cell-main">王秀兰</div>
+            <div class="t-cell-sub">青石镇中心小学 · 五年级数学 · 教龄 21 年</div>
+            <div class="t-tags"><span class="chip chip-teal">教学能手</span><span class="chip chip-sky">AI 融合先锋</span></div>
+          </div>
+        </div>
+        <div class="teacher-card" onclick="toast('正在打开 张敏 老师画像')">
+          <div class="ava" style="background:linear-gradient(135deg,#FBBF24,#FB7185);color:#1a1204">张</div>
+          <div style="flex:1">
+            <div class="t-cell-main">张敏</div>
+            <div class="t-cell-sub">双桥村小学 · 五年级语文 · 教龄 6 年</div>
+            <div class="t-tags"><span class="chip chip-amber">控辍标兵</span><span class="chip chip-gray">青年骨干</span></div>
+          </div>
+        </div>
+        <div class="teacher-card" onclick="toast('正在打开 陈建国 老师画像')">
+          <div class="ava" style="background:linear-gradient(135deg,#A78BFA,#38BDF8);color:#0b0620">陈</div>
+          <div style="flex:1">
+            <div class="t-cell-main">陈建国</div>
+            <div class="t-cell-sub">梅岭小学 · 六年级科学 · 教龄 31 年</div>
+            <div class="t-tags"><span class="chip chip-gray">即将退休</span><span class="chip chip-rose">需传承带教</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g-31">
+        <div class="card">
+          <div class="card-head"><div class="card-title">画像维度构成 <span class="sub">王秀兰老师</span></div></div>
+          <div style="padding:10px 16px 14px;height:268px" id="radar"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">赋能建议 <span class="chip chip-teal">已推送</span></div></div>
+          <div style="padding:20px">
+            <div class="timeline">
+              <div class="tl-item b-teal"><div class="tl-title">AI 教研示范课</div><div class="tl-sub">您的学情看板使用率全县第 2，建议本学期承担 1 节 AI 融合示范课</div></div>
+              <div class="tl-item b-sky"><div class="tl-title">带教新教师</div><div class="tl-sub">推荐结对 2 名新任村小教师，双师课堂主讲经验丰富</div></div>
+              <div class="tl-item b-amber"><div class="tl-title">乡村教育案例申报</div><div class="tl-sub">您的"错题本闭环"实践符合省级乡村教育案例申报条件</div></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--faint);margin-top:10px;display:flex;align-items:center;gap:6px"><span class="iconify" data-icon="ph:info"></span> 画像仅用于赋能与评优参考 · 不公开排名 · 教师本人可见</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ 教研活动闭环 ================ -->
+    <section class="page" id="page-research">
+      <div class="page-head">
+        <div>
+          <h1>教研活动闭环</h1>
+          <p class="desc">全区教研活动从创建、过程留痕到成果沉淀全程线上闭环，反哺教学改进</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D5 教研规则库 / 活动留痕</span>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-sky btn-sm" onclick="openResWiz()"><span class="iconify" data-icon="ph:plus"></span> 创建教研活动</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-head"><div class="card-title">教研闭环流程 <span class="sub" style="font-size:11px;font-weight:500;color:#94A3B8">输入 → 实施 → 产出 → 反哺</span></div></div>
+        <div style="padding:20px 24px;display:flex;align-items:center;gap:6px">
+          <div class="loop-step"><div class="loop-ico" style="background:rgba(0,82,204,.1);color:#0052CC"><span class="iconify" data-icon="ph:funnel-simple"></span></div><div class="loop-t">问题提出</div><div class="loop-d">学情数据/教学难点<br>自动聚合形成议题</div></div>
+          <span class="iconify loop-arrow" data-icon="ph:arrow-right"></span>
+          <div class="loop-step"><div class="loop-ico" style="background:rgba(45,212,191,.14);color:#0D9488"><span class="iconify" data-icon="ph:users-four"></span></div><div class="loop-t">教研实施</div><div class="loop-d">示范课/集体备课/工作坊<br>过程全程留痕</div></div>
+          <span class="iconify loop-arrow" data-icon="ph:arrow-right"></span>
+          <div class="loop-step"><div class="loop-ico" style="background:rgba(251,191,36,.16);color:#B45309"><span class="iconify" data-icon="ph:stack-simple"></span></div><div class="loop-t">成果沉淀</div><div class="loop-d">教案/课例/纪要<br>自动归档规则库</div></div>
+          <span class="iconify loop-arrow" data-icon="ph:arrow-right"></span>
+          <div class="loop-step"><div class="loop-ico" style="background:rgba(52,211,153,.15);color:#059669"><span class="iconify" data-icon="ph:arrows-clockwise"></span></div><div class="loop-t">反哺教学</div><div class="loop-d">优秀设计推送全区<br>形成下一轮议题</div></div>
+        </div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:18px">
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-sky"><span class="iconify" data-icon="ph:calendar-blank"></span></div><span class="chip chip-green">本月</span></div>
+          <div><div class="kpi-num">26<small>场</small></div><div class="kpi-label">教研活动</div></div>
+          <div class="mini-bar"><i style="width:78%"></i></div>
+        </div>
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-teal"><span class="iconify" data-icon="ph:users-three"></span></div><span class="chip chip-teal"><span class="iconify" data-icon="ph:trend-up"></span> +6%</span></div>
+          <div><div class="kpi-num">82<small>%</small></div><div class="kpi-label">教师参与率</div></div>
+          <div class="mini-bar"><i style="width:82%;background:linear-gradient(90deg,var(--teal-deep),#5EEAD4)"></i></div>
+        </div>
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:stack-simple"></span></div><span class="chip chip-amber">归档</span></div>
+          <div><div class="kpi-num">14<small>份</small></div><div class="kpi-label">成果沉淀</div></div>
+          <div class="mini-bar"><i style="width:64%;background:linear-gradient(90deg,var(--amber-deep),#FCD34D)"></i></div>
+        </div>
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-rose"><span class="iconify" data-icon="ph:presentation-chart"></span></div><span class="chip chip-rose">示范课</span></div>
+          <div><div class="kpi-num">8<small>节</small></div><div class="kpi-label">区级示范课</div></div>
+          <div class="mini-bar"><i style="width:42%;background:linear-gradient(90deg,var(--rose-deep),#FDA4AF)"></i></div>
+        </div>
+      </div>
+
+      <div class="grid g3" id="resGrid">
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">区级示范课磨课 · 《分数的再认识》</div><div class="card-extra"><span class="chip chip-green">进行中</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">10 校 24 位教师参与 · 已完成 2 轮磨课 · 第 3 轮 8-18 在青石镇小</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar-stack"><span class="a" style="background:#0052CC">王</span><span class="a" style="background:#0D9488">李</span><span class="a" style="background:#B45309">陈</span><span class="a more">+21</span></div>
+              <span style="font-size:11.5px;color:#94A3B8">24 人参与</span>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开磨课记录')">查看记录</button>
+            </div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">跨校集体备课 · 青石镇 × 双桥村</div><div class="card-extra"><span class="chip chip-blue">待评议</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">《用字母表示数》主备共享模式 · 主备人王秀兰 · 成果待 5 位审阅人评议</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar-stack"><span class="a" style="background:#0284C7">王</span><span class="a" style="background:#10B981">李</span><span class="a" style="background:#F59E0B">陈</span></div>
+              <span style="font-size:11.5px;color:#94A3B8">3 人已提交设计</span>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开评议页面')">评议</button>
+            </div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">青年教师工作坊 · 粉笔字与板书</div><div class="card-extra"><span class="chip chip-amber">报名中</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">面向 35 岁以下教师 · 4 期线下训练 · 本期已报名 6/20 人</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar-stack"><span class="a" style="background:#8B5CF6">张</span><span class="a" style="background:#EC4899">刘</span><span class="a more">+4</span></div>
+              <span style="font-size:11.5px;color:#94A3B8">6 人已报名</span>
+              <button class="btn btn-sky btn-sm" style="margin-left:auto" onclick="toast('报名成功，已加入活动')">报名</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== 教研活动创建向导 ===== -->
+<div class="wiz-mask" id="resWiz">
+  <div class="wiz">
+    <div class="wiz-head">
+      <div class="wiz-ico"><span class="iconify" data-icon="ph:users-four"></span></div>
+      <div>
+        <div class="wiz-title">创建教研活动</div>
+        <div class="wiz-sub" id="resWizSub">第 1 步 · 选择活动主题</div>
+      </div>
+      <span class="wiz-x" onclick="closeResWiz()"><span class="iconify" data-icon="ph:x"></span></span>
+    </div>
+    <div class="wiz-steps"><i class="on"></i><i></i><i></i></div>
+    <div class="wiz-body">
+      <div class="wiz-step on" id="resStep0">
+        <div class="wiz-tip">选择本次活动要解决的问题</div>
+        <div class="self-items" id="resTopicList"></div>
+      </div>
+      <div class="wiz-step" id="resStep1">
+        <div class="wiz-q">参与范围</div>
+        <div class="opt-cols">
+          <div class="opt-card" data-v="all" onclick="selResOpt('range',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:map-trifold"></span></div><div class="oc-t">全区</div><div class="oc-d">26 所学校同步</div></div>
+          <div class="opt-card" data-v="town" onclick="selResOpt('range',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:house-line"></span></div><div class="oc-t">镇域</div><div class="oc-d">青石镇 8 所学校</div></div>
+          <div class="opt-card" data-v="pair" onclick="selResOpt('range',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:arrows-left-right"></span></div><div class="oc-t">跨校结对</div><div class="oc-d">城区 × 村小结对</div></div>
+        </div>
+        <div class="wiz-q" style="margin-top:22px">举办时间</div>
+        <div class="opt-cols">
+          <div class="opt-card" data-v="fri" onclick="selResOpt('when',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:calendar-blank"></span></div><div class="oc-t">本周五</div><div class="oc-d">8 月 21 日</div></div>
+          <div class="opt-card" data-v="nextw" onclick="selResOpt('when',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:calendar-blank"></span></div><div class="oc-t">下周三</div><div class="oc-d">8 月 26 日</div></div>
+          <div class="opt-card" data-v="nextf" onclick="selResOpt('when',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:calendar-blank"></span></div><div class="oc-t">下周五</div><div class="oc-d">8 月 28 日</div></div>
+        </div>
+      </div>
+      <div class="wiz-step" id="resStep2">
+        <div class="wiz-gen">
+          <div class="wiz-gen-ico"><span class="iconify" data-icon="ph:sparkle"></span></div>
+          <div class="wiz-gen-t" id="resGenT">正在生成活动方案…</div>
+          <div class="wiz-gen-s" id="resGenS">自动匹配参与学校 · 生成通知与议程</div>
+          <div class="wiz-gen-bar"><i id="resGenBar"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="wiz-foot">
+      <button class="btn btn-ghost" id="resPrevBtn" style="visibility:hidden" onclick="resPrev()">上一步</button>
+      <button class="btn btn-sky" id="resNextBtn" onclick="resNext()">下一步</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%) translateY(80px);background:#FFFFFF;border:1px solid rgba(2,132,199,.35);color:#1E293B;font-size:13px;font-weight:600;padding:12px 22px;border-radius:12px;z-index:999;opacity:0;transition:all .3s;box-shadow:0 10px 30px rgba(15,23,42,.16);pointer-events:none;white-space:nowrap}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+
+
+<script type="module" src="/assets/app/admin-main.js"></script>
+</body>
+</html>

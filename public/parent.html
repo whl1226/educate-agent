@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>乡芽 · 家长端 — 乡镇教育智能体原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#FAF6F0; --card:#fff; --amber:#D97706; --amber-deep:#B45309; --amber-soft:rgba(217,119,6,.12);
+  --green:#16A34A; --green-soft:rgba(22,163,74,.12);
+  --rose:#E11D48; --rose-soft:rgba(225,29,72,.08);
+  --sky:#0284C7; --sky-soft:rgba(2,132,199,.1);
+  --ink:#3F3A33; --text:#2d2a26; --muted:#8a8175; --faint:#b5aca0;
+  --line:#eee7db; --border:#f0eae0;
+  --font:'Noto Sans SC',sans-serif; --serif:'Noto Serif SC',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:#3a352e;color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:34px 16px 60px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:10px}
+.stage-head{text-align:center;margin-bottom:26px}
+.stage-title{font-size:15px;font-weight:900;color:#fff;letter-spacing:2px;display:flex;align-items:center;gap:10px;justify-content:center}
+.stage-title .iconify{color:var(--amber);font-size:19px}
+.stage-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:7px;letter-spacing:1px}
+.stage-sub a{color:rgba(255,255,255,.7);text-decoration:none;margin:0 5px;font-weight:600}
+.stage-sub a.on{color:var(--amber)}
+.phone{width:375px;height:780px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 0 0 9px #0c0d10,0 0 0 11px #4a4238,0 40px 90px rgba(0,0,0,.55);flex:none}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#0c0d10;border-radius:0 0 16px 16px;z-index:60}
+.statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:11.5px;font-weight:700;color:var(--ink);background:var(--bg);position:relative;z-index:55}
+.phone-screen{height:calc(100% - 44px - 70px);overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.phone-screen::-webkit-scrollbar{display:none}
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:70px;background:#fff;border-top:1px solid #f0ebe2;display:flex;z-index:58}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#c0b7a8;cursor:pointer;font-size:10.5px;font-weight:700;transition:color .2s;user-select:none}
+.tab-item .iconify{font-size:21px}
+.tab-item.on{color:var(--amber-deep)}
+.tab-item.on .iconify{color:var(--amber)}
+.view{display:none}
+.view.on{display:block;animation:viewIn .34s cubic-bezier(.2,.8,.3,1)}
+@keyframes viewIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt{padding:16px 16px 26px}
+/* 大字版 */
+.phone.big{--base:1.35}
+.phone.big .phone-screen{font-size:calc(var(--base) * 1em)}
+.section-title{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:900;font-family:var(--serif);margin:20px 2px 12px}
+.section-title .iconify{color:var(--amber);font-size:18px}
+.section-title .more{margin-left:auto;font-size:12px;font-weight:700;color:var(--faint);cursor:pointer}
+.card{background:#fff;border-radius:18px;box-shadow:0 1px 3px rgba(90,70,40,.05),0 10px 30px -14px rgba(90,70,40,.18)}
+.card-pad{padding:16px 17px}
+.row-card{display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer;transition:transform .15s}
+.row-card:active{transform:scale(.985)}
+.row-card+.row-card{border-top:1px solid #f6f1e8}
+.ric{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:20px;flex:none}
+.ric-amber{background:var(--amber-soft);color:var(--amber)}
+.ric-green{background:var(--green-soft);color:var(--green)}
+.ric-rose{background:var(--rose-soft);color:var(--rose)}
+.ric-sky{background:var(--sky-soft);color:var(--sky)}
+.ric-cream{background:#F6F0E4;color:#8a6d3b}
+.r-title{font-size:14.5px;font-weight:800}
+.r-sub{font-size:12px;color:var(--faint);margin-top:3px;line-height:1.6}
+.r-arrow{color:#ddd2c0;font-size:16px;flex:none;margin-left:4px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;border-radius:20px;padding:3.5px 9px}
+.chip-amber{background:var(--amber-soft);color:var(--amber-deep)}
+.chip-green{background:var(--green-soft);color:#15803d}
+.chip-rose{background:var(--rose-soft);color:var(--rose)}
+.chip-gray{background:#F3EEE4;color:var(--faint)}
+.src-tag{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:700;color:var(--faint);background:#F3EEE4;border-radius:16px;padding:3px 9px}
+.src-tag .iconify{font-size:10.5px}
+.src-tag b{color:var(--amber-deep)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;font-family:var(--font);font-weight:800;border-radius:15px;padding:14px 18px;font-size:15px;transition:all .2s;width:100%}
+.btn .iconify{font-size:18px}
+.btn-amber{background:var(--amber);color:#fff;box-shadow:0 8px 20px rgba(217,119,6,.35)}
+.btn-amber:active{transform:scale(.98);background:var(--amber-deep)}
+.btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn-ghost:active{background:#faf7f1}
+.btn-green{background:var(--green);color:#fff}
+.btn-sm{padding:10px 15px;font-size:13px;border-radius:12px;width:auto}
+.progress{height:8px;background:#F0E9DD;border-radius:6px;overflow:hidden}
+.progress i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--amber),#F59E0B);transition:width .8s ease}
+.gauge-row{display:flex;align-items:center;gap:10px;padding:11px 0}
+.gauge-row+.gauge-row{border-top:1px solid #f6f1e8}
+.gauge-name{width:86px;flex:none;font-size:13px;font-weight:700}
+.gauge-track{flex:1;height:9px;background:#F0E9DD;border-radius:6px;overflow:hidden}
+.gauge-track i{display:block;height:100%;border-radius:6px}
+.gauge-val{font-size:13px;font-weight:900;width:38px;text-align:right}
+.week-banner{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6E8 100%);border:1px solid #F3E3C3;border-radius:18px;padding:20px;color:#6B5638;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 12px 32px -14px rgba(180,83,9,.22)}
+.week-banner::after{content:'';position:absolute;right:-50px;bottom:-70px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(217,119,6,.14),transparent 70%)}
+.week-date{font-size:11.5px;color:#92610C;font-weight:700}
+.week-score{font-family:var(--serif);font-size:38px;font-weight:900;margin-top:6px;line-height:1;color:#B45309}
+.week-score small{font-size:15px;font-weight:600}
+.week-trend{display:inline-flex;align-items:center;gap:5px;background:rgba(217,119,6,.12);border:1px solid rgba(217,119,6,.2);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:800;margin-top:12px;color:#B45309}
+.msg{display:flex;gap:10px;max-width:88%;animation:msgIn .3s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}}
+.msg .ava{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:16px;margin-top:2px}
+.msg .bub{padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.8}
+.msg.voice-msg{align-self:flex-start}
+.msg.voice-msg .ava{background:var(--amber-soft)}
+.msg.voice-msg .bub{background:#fff;border:1px solid var(--line);border-top-left-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.msg.voice-me{align-self:flex-end;flex-direction:row-reverse}
+.msg.voice-me .ava{background:var(--green-soft)}
+.msg.voice-me .bub{background:var(--green);color:#fff;border-top-right-radius:5px}
+.voice-bar{display:flex;align-items:center;gap:9px;background:rgba(217,119,6,.12);border-radius:12px;padding:9px 13px;margin-top:8px}
+.voice-bar .iconify{color:var(--amber);font-size:17px}
+.voice-bar .v-track{flex:1;height:6px;background:rgba(217,119,6,.18);border-radius:4px;overflow:hidden}
+.voice-bar .v-track i{display:block;height:100%;background:var(--amber);border-radius:4px}
+.voice-bar .v-time{font-size:10.5px;color:var(--amber-deep);font-weight:700;font-family:var(--num)}
+.record-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:none;cursor:pointer;font-family:var(--font);font-weight:800;border-radius:16px;padding:15px;font-size:15px;background:linear-gradient(135deg,#D97706,#F59E0B);color:#fff;box-shadow:0 10px 24px rgba(217,119,6,.35)}
+.record-btn:active{transform:scale(.98)}
+.record-btn.recording{background:linear-gradient(135deg,#E11D48,#F43F5E);animation:recPulse 1.4s infinite}
+@keyframes recPulse{0%,100%{box-shadow:0 10px 24px rgba(225,29,72,.35)}50%{box-shadow:0 10px 34px rgba(225,29,72,.55)}}
+.tip-card{background:#fff;border-radius:16px;padding:16px;border:1px solid var(--line);margin-bottom:12px}
+.tip-card .q{font-size:14.5px;font-weight:800;color:var(--amber-deep);font-family:var(--serif);margin-bottom:10px}
+.tip-card .a{font-size:13.5px;line-height:2;color:#5c5448}
+.tip-card .a b{color:var(--amber-deep)}
+.navhead{display:flex;align-items:center;gap:10px;padding:12px 14px 6px;position:sticky;top:0;background:var(--bg);z-index:20}
+.navhead .back{width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;font-size:16px;flex:none}
+.navhead h2{font-size:16px;font-weight:900;font-family:var(--serif)}
+.navhead .src{margin-left:auto}
+.switch{position:relative;width:44px;height:24px;background:#E4DCCF;border-radius:20px;cursor:pointer;transition:.25s;flex:none}
+.switch.on{background:var(--amber)}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on::after{left:23px}
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(80px);background:#3a352e;color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:20px;z-index:120;opacity:0;transition:all .35s;box-shadow:0 14px 40px rgba(0,0,0,.35);white-space:nowrap;max-width:85vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.big-on .phone{--big:true}
+#bigServices .big-svc{display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 8px;font-family:var(--font);font-size:12px;font-weight:800;color:var(--ink);cursor:pointer;transition:transform .15s}
+#bigServices .big-svc:active{transform:scale(.96)}
+#bigServices .big-svc .iconify{font-size:24px;color:var(--amber)}
+</style>
+<script defer src="/assets/legacy/parent.legacy.js"></script>
+</head>
+<body>
+
+<div class="stage-head">
+  <div class="stage-title"><span class="iconify" data-icon="ph:plant-fill"></span>乡芽 · 家长端 — 千里之外，也能陪孩子长大</div>
+  <div class="stage-sub">
+    <a href="[object Object].html">教师端</a>｜<a href="[object Object].html">学生端</a>｜<a href="[object Object].html" class="on">家长端</a>｜<a href="[object Object].html">管理端</a>
+    <span style="margin-left:10px;color:rgba(255,255,255,.35)">原型演示 DEMO · 模拟数据已脱敏</span>
+  </div>
+</div>
+
+<div class="phone" id="phoneBox">
+  <div class="notch"></div>
+  <div class="statusbar"><span class="time">19:32</span><span class="icons"><span class="iconify" data-icon="ph:cell-signal-full"></span><span class="iconify" data-icon="ph:wifi-high"></span><span class="iconify" data-icon="ph:battery-full"></span></span></div>
+
+  <div class="phone-screen" id="screen">
+
+    <!-- ============ P1 学情周报 ============ -->
+    <div class="view on" id="view-weekly">
+      <div class="pt">
+        <div class="week-banner">
+          <div class="week-date">李小雨 同学 · 第 15 周学习周报</div>
+          <div class="week-score">84<small> 分</small></div>
+          <div style="font-size:12px;opacity:.9;margin-top:6px">本周综合表现 · 较上周 +6 分</div>
+          <div class="week-trend"><span class="iconify" data-icon="ph:trend-up"></span> 连续 3 周进步</div>
+        </div>
+        <div style="font-size:10.5px;color:var(--faint);margin:-6px 2px 4px;display:flex;align-items:center;gap:4px"><span class="iconify" data-icon="ph:shield-check"></span>数据经脱敏聚合 · 依据本周 38 次作答 · 已获家长授权</div>
+
+        <div class="section-title"><span class="iconify" data-icon="ph:chart-line-up"></span>本周掌握度</div>
+        <div class="card card-pad">
+          <div class="gauge-row"><div class="gauge-name">语文</div><div class="gauge-track"><i style="width:86%;background:linear-gradient(90deg,#16A34A,#4ADE80)"></i></div><div class="gauge-val" style="color:#15803d">86</div></div>
+          <div class="gauge-row"><div class="gauge-name">数学</div><div class="gauge-track"><i style="width:74%;background:linear-gradient(90deg,#D97706,#FBBF24)"></i></div><div class="gauge-val" style="color:var(--amber-deep)">74</div></div>
+          <div class="gauge-row"><div class="gauge-name">英语</div><div class="gauge-track"><i style="width:68%;background:linear-gradient(90deg,#D97706,#FBBF24)"></i></div><div class="gauge-val" style="color:var(--amber-deep)">68</div></div>
+          <div class="gauge-row"><div class="gauge-name">科学</div><div class="gauge-track"><i style="width:81%;background:linear-gradient(90deg,#16A34A,#4ADE80)"></i></div><div class="gauge-val" style="color:#15803d">81</div></div>
+        </div>
+
+        <div class="section-title"><span class="iconify" data-icon="ph:medal"></span>老师寄语</div>
+        <div class="card" style="background:linear-gradient(135deg,#FFF9EF,#FDF1DC);border:1px solid #F3E3C3">
+          <div style="padding:16px 17px">
+            <div style="font-size:13.5px;line-height:2;color:#6b5638">小雨这周在<b>列方程</b>上进步很大（+21 分）！她在数学课上主动举手讲题了。建议周末让她把《小英雄雨来》读完，下周一有阅读分享会。—— 王老师</div>
+            <div style="font-size:10.5px;color:var(--faint);margin-top:8px;display:flex;align-items:center;gap:4px"><span class="iconify" data-icon="ph:megaphone"></span> 教师寄语 · 每周更新 · 可在教师端编辑</div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="iconify" data-icon="ph:calendar-dots"></span>本周成长足迹 <span class="more" onclick="toast('已展开完整时间线')">查看全部</span></div>
+        <div class="card" style="padding:16px 17px">
+          <div style="display:flex;align-items:flex-start;gap:12px;position:relative;padding-bottom:16px">
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--green-soft);display:grid;place-items:center;color:#15803d;font-size:15px;flex:none"><span class="iconify" data-icon="ph:check"></span></div>
+            <div><div style="font-size:13.5px;font-weight:800">完成数学练习 · 全部答对</div><div style="font-size:11.5px;color:var(--faint);margin-top:3px">周二 18:24 · 简易方程 5/5</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;position:relative;padding-bottom:16px">
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--amber-soft);display:grid;place-items:center;color:var(--amber-deep);font-size:15px;flex:none"><span class="iconify" data-icon="ph:microphone"></span></div>
+            <div><div style="font-size:13.5px;font-weight:800">英语跟读 · 得分 92</div><div style="font-size:11.5px;color:var(--faint);margin-top:3px">周四 19:02 · 口语 6 句</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--rose-soft);display:grid;place-items:center;color:var(--rose);font-size:15px;flex:none"><span class="iconify" data-icon="ph:heart"></span></div>
+            <div><div style="font-size:13.5px;font-weight:800">收到爸爸的语音留言 · 已回复</div><div style="font-size:11.5px;color:var(--faint);margin-top:3px">周五 20:11 · 陪伴留言 1 条</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P2 语音留言陪伴 ============ -->
+    <div class="view" id="view-voice">
+      <div class="navhead"><div class="back" onclick="go('view-weekly')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>和小雨的陪伴</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>语音双向留言</span></div>
+      <div style="padding:6px 16px 12px">
+        <div style="background:linear-gradient(135deg,#FFF9EF,#FDF1DC);border:1px solid #F3E3C3;border-radius:15px;padding:13px 15px;font-size:12.5px;color:#7a6543;line-height:1.8;margin-bottom:4px">
+          <b>怎么用：</b>你留言，小雨随时能听到；孩子回复了，你也会收到提醒。忙完了说一句，孩子就知道你惦记着。
+        </div>
+      </div>
+      <div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:13px" id="voiceChat">
+        <div class="msg voice-me">
+          <div class="ava"><span class="iconify" data-icon="ph:user"></span></div>
+          <div class="bub">小雨，爸爸在工地上挺好的，你妈寄的新衣服收到了没？<div class="voice-bar" style="background:rgba(255,255,255,.22)"><span class="iconify" data-icon="ph:play-fill"></span><div class="v-track"><i style="width:72%;background:#fff"></i></div><span class="v-time" style="color:#fff">00:14</span></div></div>
+        </div>
+        <div class="msg voice-msg">
+          <div class="ava"><span class="iconify" data-icon="ph:user"></span></div>
+          <div class="bub">收到啦爸爸！我英语考了 92 分！<div class="voice-bar"><span class="iconify" data-icon="ph:play-fill"></span><div class="v-track"><i style="width:45%"></i></div><span class="v-time">00:06</span></div><div style="font-size:10px;color:var(--faint);margin-top:7px">周四 19:03 收到</div></div>
+        </div>
+        <div class="msg voice-msg">
+          <div class="ava"><span class="iconify" data-icon="ph:user"></span></div>
+          <div class="bub">奶奶说让我问你，中秋回来吗？<div class="voice-bar"><span class="iconify" data-icon="ph:play-fill"></span><div class="v-track"><i style="width:60%"></i></div><span class="v-time">00:09</span></div><div style="font-size:10px;color:var(--faint);margin-top:7px">周五 20:11 收到</div></div>
+        </div>
+      </div>
+      <div style="padding:12px 16px;position:sticky;bottom:0;background:var(--bg)">
+        <button class="record-btn" id="recordBtn" onclick="recordVoice()"><span class="iconify" data-icon="ph:microphone"></span> 按住说话 · 松开发送</button>
+        <div style="font-size:10px;color:var(--faint);text-align:center;margin-top:8px">语音 60 秒内 · 自动转文字给小雨看 · 未成年人隐私已保护</div>
+      </div>
+    </div>
+
+    <!-- ============ P3 祖辈大字版 ============ -->
+    <div class="view" id="view-big">
+      <div class="navhead"><div class="back" onclick="go('view-serve')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>大字版 · 语音播报</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>周报/通知大字播报</span></div>
+      <div style="padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:14px">
+          <div style="font-size:34px;line-height:1"><span class="iconify" data-icon="ph:user"></span></div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:900">大字模式</div><div style="font-size:12px;color:var(--faint);margin-top:3px">字更大，看得清；点一下，读给你听</div></div>
+          <div class="switch on" id="bigSwitch" onclick="toggleBig(this)"></div>
+        </div>
+        <div style="background:linear-gradient(135deg,#B45309,#D97706);border-radius:18px;padding:22px;color:#fff;position:relative;overflow:hidden;margin-bottom:14px">
+          <div style="position:absolute;right:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)"></div>
+          <div style="font-size:14px;opacity:.9">小雨本周表现</div>
+          <div style="font-family:var(--serif);font-size:44px;font-weight:900;margin-top:8px">很好！<span style="font-size:26px">84 分</span></div>
+          <div style="font-size:14.5px;margin-top:10px;line-height:1.8">比上周进步 6 分，老师表扬了她</div>
+          <button class="btn" style="margin-top:16px;background:#fff;color:var(--amber-deep);font-size:16px;padding:13px" onclick="speakBig(this)"><span class="iconify" data-icon="ph:megaphone"></span> 点这里，读给我听</button>
+        </div>
+        <div class="card" style="padding:18px">
+          <div style="font-family:var(--serif);font-size:17px;font-weight:900;margin-bottom:12px">小雨这周做得好</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:12px;align-items:center"><span style="font-size:26px;line-height:1;color:#15803D"><span class="iconify" data-icon="ph:check-circle"></span></span><div style="font-size:16px;line-height:1.6">数学作业全对，进步很大</div></div>
+            <div style="display:flex;gap:12px;align-items:center"><span style="font-size:26px;line-height:1;color:#15803D"><span class="iconify" data-icon="ph:check-circle"></span></span><div style="font-size:16px;line-height:1.6">英语朗读 92 分，比上周高</div></div>
+            <div style="display:flex;gap:12px;align-items:center"><span style="font-size:26px;line-height:1;color:#B45309"><span class="iconify" data-icon="ph:push-pin"></span></span><div style="font-size:16px;line-height:1.6">周日晚上 7 点，开家长会</div></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-top:12px;display:flex;align-items:center;gap:5px"><span class="iconify" data-icon="ph:speaker-high"></span> 语音播报使用系统朗读 · 可调节语速</div>
+      </div>
+    </div>
+
+    <!-- ============ 服务首页（P3/P4/P5 入口） ============ -->
+    <div class="view" id="view-serve">
+      <div class="pt">
+        <div style="background:linear-gradient(135deg,#3a352e,#5c5346);border-radius:18px;padding:18px;color:#fff;margin-bottom:14px">
+          <div style="font-size:12px;opacity:.8">爸爸 / 奶奶，你们好</div>
+          <div style="font-family:var(--serif);font-size:18px;font-weight:900;margin-top:5px">这里是给家长的贴心服务</div>
+        </div>
+        <div class="card" style="margin-bottom:4px">
+          <div class="row-card" onclick="go('view-big')">
+            <div class="ric ric-amber"><span class="iconify" data-icon="ph:text-aa"></span></div>
+            <div style="flex:1"><div class="r-title">祖辈大字版 · 语音播报</div><div class="r-sub">字大看得清 · 一键读给老人听</div></div>
+            <span class="chip chip-amber">推荐</span>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-tips')">
+            <div class="ric ric-sky"><span class="iconify" data-icon="ph:chats"></span></div>
+            <div style="flex:1"><div class="r-title">家校沟通话术助手</div><div class="r-sub">不会跟老师说话？照着说就行</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-family')">
+            <div class="ric ric-green"><span class="iconify" data-icon="ph:house-line"></span></div>
+            <div style="flex:1"><div class="r-title">家庭教育指导</div><div class="r-sub">每天 3 分钟 · 在家也能教好孩子</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="toast('已打开设置')">
+            <div class="ric ric-cream"><span class="iconify" data-icon="ph:gear-six"></span></div>
+            <div style="flex:1"><div class="r-title">提醒设置</div><div class="r-sub">周报推送 · 留言提醒 · 家长会通知</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+        </div>
+        <div id="bigServices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px"></div>
+        <div style="font-size:10.5px;color:var(--faint);margin-top:12px;display:flex;align-items:center;gap:4px;padding:0 2px"><span class="iconify" data-icon="ph:shield-check"></span>话术与指导内容与教师端共用 D5 沟通知识库 · 数据脱敏</div>
+      </div>
+    </div>
+
+    <!-- ============ P4 家校沟通话术助手 ============ -->
+    <div class="view" id="view-tips">
+      <div class="navhead"><div class="back" onclick="go('view-serve')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>沟通话术助手</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>D5 沟通知识库</span></div>
+      <div style="padding:14px 16px">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <span style="background:var(--amber-soft);color:var(--amber-deep);border-radius:20px;padding:8px 14px;font-size:12.5px;font-weight:800">不知道跟老师说什么？</span>
+          <span style="background:#F3EEE4;color:var(--faint);border-radius:20px;padding:8px 14px;font-size:12.5px;font-weight:800">选个场景试试</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <span class="chip chip-amber" style="padding:7px 13px;font-size:12px">想问问孩子学习</span>
+          <span class="chip chip-amber" style="padding:7px 13px;font-size:12px">孩子被批评了</span>
+          <span class="chip chip-amber" style="padding:7px 13px;font-size:12px">想请假</span>
+          <span class="chip chip-amber" style="padding:7px 13px;font-size:12px">感谢老师</span>
+        </div>
+        <div class="tip-card">
+          <div class="q">「想问问孩子学习」怎么说？</div>
+          <div class="a">王老师您好，我是<b>李小雨</b>的爸爸（妈妈/奶奶）。想问一下孩子最近上课表现怎么样，有哪些地方需要我们在家多督促的？<br><br><b>可以这样说：</b>"老师您说，我们记下来照着做。"</div>
+        </div>
+        <div class="tip-card">
+          <div class="q">「孩子被批评了」怎么跟老师沟通？</div>
+          <div class="a">老师您好，孩子回家说被您批评了，我们想了解一下具体情况，<b>配合您一起教育他</b>。他平时在家也有这个毛病，您多费心。<br><br><b>小提示：</b>别先护短，也别急着骂孩子，先听完老师的。</div>
+        </div>
+        <div class="tip-card">
+          <div class="q">「想请假」怎么说？</div>
+          <div class="a">王老师，孩子明天<b>身体不舒服</b>，想请一天假，在家休息。作业我们会在家补上，麻烦您记一下。<br><br><b>可以这样说：</b>"需要带医院证明吗？我拍给您。"</div>
+        </div>
+        <div class="tip-card" style="border-style:dashed;background:#FFFDF8">
+          <div class="q"><span class="iconify" data-icon="ph:lightbulb" style="vertical-align:-2px"></span> 还可以自己问</div>
+          <div style="display:flex;gap:8px">
+            <input style="flex:1;border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;font-family:var(--font);font-size:13px;outline:none;background:#fff" placeholder="比如：孩子成绩下降了，怎么跟老师说…">
+            <button class="btn btn-amber btn-sm" onclick="toast('已生成一段适合家长口吻的话术')">生成</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P5 家庭教育指导 ============ -->
+    <div class="view" id="view-family">
+      <div class="navhead"><div class="back" onclick="go('view-serve')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>家庭教育指导</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>D5 沟通知识库</span></div>
+      <div style="padding:14px 16px">
+        <div style="background:linear-gradient(135deg,#15803D,#16A34A);border-radius:18px;padding:18px;color:#fff;margin-bottom:14px">
+          <div style="font-size:12px;opacity:.85">今日小课 · 3 分钟听完</div>
+          <div style="font-family:var(--serif);font-size:17px;font-weight:900;margin-top:5px;line-height:1.6">外出打工的爸妈，怎样"远程陪"孩子？</div>
+          <button class="btn" style="margin-top:12px;background:#fff;color:#15803D;font-size:14px" onclick="toast('开始播放今日音频课 · 3 分钟')"><span class="iconify" data-icon="ph:play-fill"></span> 听这节课</button>
+        </div>
+        <div class="tip-card" style="background:#FFFDF8">
+          <div class="q"><span class="iconify" data-icon="ph:book-open-text" style="vertical-align:-2px"></span> 今日要点</div>
+          <div class="a">
+            ① <b>固定时间</b>：每周固定 2 个晚上通视频，让孩子有期待；<br>
+            ② <b>少问成绩，多问生活</b>："今天最开心的事是什么？"；<br>
+            ③ <b>用语音留言接力</b>：忙的时候录一句话，孩子随时能听；<br>
+            ④ <b>别说"别人家孩子"</b>：拿孩子和自己比，每天进步一点就表扬。
+          </div>
+        </div>
+        <div class="section-title" style="margin-top:4px"><span class="iconify" data-icon="ph:book-open-text"></span>本周课程表</div>
+        <div class="card" style="padding:6px 16px">
+          <div class="row-card"><div class="ric ric-green"><span class="iconify" data-icon="ph:check-circle"></span></div><div style="flex:1"><div class="r-title">周一 · 表扬的正确姿势</div><div class="r-sub">夸努力，不夸聪明</div></div><span class="chip chip-green">已学</span></div>
+          <div class="row-card"><div class="ric ric-amber"><span class="iconify" data-icon="ph:play-circle"></span></div><div style="flex:1"><div class="r-title">周三 · 孩子沉迷手机怎么办</div><div class="r-sub">先共情，再立规矩</div></div><span class="chip chip-amber">今天</span></div>
+          <div class="row-card"><div class="ric ric-cream"><span class="iconify" data-icon="ph:calendar"></span></div><div style="flex:1"><div class="r-title">周五 · 和老人带娃的分寸</div><div class="r-sub">分工明确，不互相指责</div></div><span class="chip chip-gray">待学</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 底部 Tab ===== -->
+  <div class="tabbar">
+    <div class="tab-item on" data-tab="weekly"><span class="iconify" data-icon="ph:chart-line-up"></span>周报</div>
+    <div class="tab-item" data-tab="voice"><span class="iconify" data-icon="ph:chat-circle-text"></span>陪伴</div>
+    <div class="tab-item" data-tab="serve"><span class="iconify" data-icon="ph:hands-praying"></span>服务</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script type="module" src="/assets/app/parent-main.js"></script>
+</body>
+</html>

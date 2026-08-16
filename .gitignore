@@ -1,0 +1,55 @@
+# 依赖
+node_modules/
+server/node_modules/
+
+# AI 会话记忆与本地工具产物
+.workbuddy/
+.opencode/
+.agents/
+
+# 构建产物
+dist/
+server/dist/
+public/assets/app/
+
+# legacy 脚本为手工维护的业务源码（非构建产物），纳入版本控制
+!public/assets/legacy/
+
+# 运行时数据与上传文件（含用户隐私数据，禁止入库）
+server/data/
+server/uploads/
+uploads/
+
+# 环境变量（含密钥，禁止入库）
+.env
+.env.*
+!.env.example
+
+# 日志与系统文件
+*.log
+*.err
+.DS_Store
+Thumbs.db
+server.pid
+build.log
+
+# 无关项目与其他交付物（禁止入库）
+参考/
+原型/
+原型.zip
+初赛提交材料/
+_shots/
+verify-*.docx
+verify-*.mp4
+verify-*.pdf
+*获奖*.pdf
+*证书*.pdf
+*教案*.docx
+*教案*.pdf
+*结业*.pdf
+比赛文件*.pdf
+competition-deck-builder.skill
+pyenv/
+.worktrees/
+03_乡村教育场景功能全景与需求汇总表.md
+乡镇教育垂直Agent四端功能需求全景.pdf

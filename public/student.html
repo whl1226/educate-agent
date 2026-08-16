@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>乡芽 · 学生端 — 乡镇教育智能体原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Outfit:ital,wght@0,500;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f7f7f7; --card:#fff; --ink:#18181b; --ink2:#27272a;
+  --orange:#F97316; --orange-deep:#EA580C; --orange-soft:rgba(249,115,22,.12);
+  --green:#10B981; --green-soft:rgba(16,185,129,.12);
+  --amber:#F59E0B; --amber-soft:rgba(245,158,11,.14);
+  --rose:#F43F5E; --rose-soft:rgba(244,63,94,.1);
+  --sky:#0EA5E9; --sky-soft:rgba(14,165,233,.1);
+  --violet:#8B5CF6; --violet-soft:rgba(139,92,246,.1);
+  --text:#1c1d21; --muted:#71717a; --faint:#a1a1aa;
+  --border:#f0f0f1; --line:#e7e7e8;
+  --font:'Noto Sans SC',sans-serif; --num:'Outfit','Noto Sans SC',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:#232529;color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:34px 16px 60px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:10px}
+.stage-head{text-align:center;margin-bottom:26px}
+.stage-title{font-size:15px;font-weight:900;color:#fff;letter-spacing:2px;display:flex;align-items:center;gap:10px;justify-content:center}
+.stage-title .iconify{color:var(--orange);font-size:19px}
+.stage-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:7px;letter-spacing:1px}
+.stage-sub a{color:rgba(255,255,255,.7);text-decoration:none;margin:0 5px;font-weight:600}
+.stage-sub a.on{color:var(--orange)}
+.phone{width:375px;height:780px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 0 0 9px #0c0d10,0 0 0 11px #3a3d44,0 40px 90px rgba(0,0,0,.55);flex:none}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#0c0d10;border-radius:0 0 16px 16px;z-index:60}
+.statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:11.5px;font-weight:700;color:var(--ink);background:var(--bg);position:relative;z-index:55}
+.statusbar .icons{display:flex;gap:5px;align-items:center}
+.phone-screen{height:calc(100% - 44px - 70px);overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.phone-screen::-webkit-scrollbar{display:none}
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:70px;background:#fff;border-top:1px solid #f2f2f3;display:flex;z-index:58;padding:0 8px}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#b0b0b4;cursor:pointer;font-size:10px;font-weight:700;transition:color .2s;user-select:none}
+.tab-item .iconify{font-size:21px}
+.tab-item.on{color:var(--ink)}
+.tab-item.on .iconify{color:var(--orange)}
+.view{display:none}
+.view.on{display:block;animation:viewIn .34s cubic-bezier(.2,.8,.3,1)}
+@keyframes viewIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pt{padding:16px 16px 26px}
+.hero{position:relative;padding:18px 18px 54px;color:#18181b;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,#FFFFFF 0%,#FFF3E8 100%);z-index:0}
+.hero::after{content:'';position:absolute;right:-60px;top:-60px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.16),transparent 70%);z-index:0}
+.hero>*{position:relative;z-index:1}
+.hero-hi{font-size:13px;color:#8a8a8f;font-weight:600}
+.hero-name{font-size:21px;font-weight:900;margin-top:3px;font-style:italic;letter-spacing:.3px}
+.hero-name b{color:var(--orange)}
+.hero-badges{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.hb{display:flex;align-items:center;gap:5px;background:#FFFFFF;border:1px solid #F5E2CE;border-radius:20px;padding:5px 11px;font-size:10.5px;font-weight:700;color:#92610C;box-shadow:0 2px 8px rgba(249,115,22,.08)}
+.hb .iconify{color:var(--orange);font-size:12px}
+.hero-float{position:absolute;right:18px;top:16px;text-align:right;z-index:2}
+.hero-float .big{font-family:var(--num);font-style:italic;font-weight:900;font-size:26px;color:#18181b}
+.hero-float .big span{color:var(--orange)}
+.hero-float .lab{font-size:10px;color:#9a9a9f;margin-top:2px;letter-spacing:1px}
+.section-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;margin:20px 2px 12px}
+.section-title .iconify{color:var(--orange);font-size:17px}
+.section-title .more{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--faint);cursor:pointer;display:flex;align-items:center;gap:2px}
+.section-title .more:active{color:var(--orange)}
+.card{background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -12px rgba(0,0,0,.12)}
+.card-pad{padding:15px 16px}
+.row-card{display:flex;align-items:center;gap:12px;padding:13px 15px;cursor:pointer;transition:transform .15s}
+.row-card:active{transform:scale(.985)}
+.row-card+.row-card{border-top:1px solid #f6f6f7}
+.ric{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:19px;flex:none}
+.ric-orange{background:var(--orange-soft);color:var(--orange)}
+.ric-green{background:var(--green-soft);color:var(--green)}
+.ric-amber{background:var(--amber-soft);color:var(--amber)}
+.ric-rose{background:var(--rose-soft);color:var(--rose)}
+.ric-sky{background:var(--sky-soft);color:var(--sky)}
+.ric-violet{background:var(--violet-soft);color:var(--violet)}
+.ric-ink{background:#f1f1f3;color:var(--ink)}
+.r-title{font-size:14px;font-weight:800}
+.r-sub{font-size:11.5px;color:var(--faint);margin-top:2.5px;line-height:1.5}
+.r-arrow{color:#d4d4d8;font-size:15px;flex:none;margin-left:4px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;border-radius:20px;padding:3px 8px}
+.chip-orange{background:var(--orange-soft);color:var(--orange-deep)}
+.chip-green{background:var(--green-soft);color:#059669}
+.chip-amber{background:var(--amber-soft);color:#b45309}
+.chip-rose{background:var(--rose-soft);color:#e11d48}
+/* 兴趣探索向导 */
+.find-entry{display:flex;align-items:center;gap:12px;padding:14px 15px;border-radius:18px;background:linear-gradient(135deg,#FFF7ED,#FDF1DC);border:1px solid #F5E2CE;margin-bottom:16px;cursor:pointer;box-shadow:0 6px 16px rgba(249,115,22,.08)}
+.find-entry:active{transform:scale(.985)}
+.fe-ico{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#F97316,#F43F5E);display:grid;place-items:center;color:#fff;font-size:20px;flex:none;box-shadow:0 6px 14px rgba(249,115,22,.3)}
+.fe-t{font-size:13.5px;font-weight:800;color:#431407}
+.fe-d{font-size:11px;color:#B45309;margin-top:2px}
+.my-pick{position:relative;border:1.5px solid var(--orange)!important;box-shadow:0 0 0 3px rgba(249,115,22,.12)!important}
+.my-pick .pick-tag{position:absolute;top:8px;right:8px;background:var(--orange);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px}
+.profile-row{display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:16px;background:linear-gradient(135deg,#F0FDF4,#EFF6FF);border:1px solid #D1FAE5;margin-bottom:16px}
+.fz-steps{display:flex;gap:6px;margin:4px 0 14px}
+.fz-steps i{height:4px;border-radius:4px;background:var(--line);flex:1;transition:all .3s}
+.fz-steps i.on{background:var(--orange)}
+.fz-tip{font-size:11px;color:var(--faint);margin-bottom:12px}
+.fz-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fz-pick{border:1.5px solid var(--line);border-radius:16px;padding:14px 8px;text-align:center;background:#fff;cursor:pointer;transition:all .2s}
+.fz-pick.on{border-color:var(--orange);background:#FFF7ED;box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+.fz-pick .fp-ico{width:42px;height:42px;margin:0 auto 7px;border-radius:13px;display:grid;place-items:center;font-size:20px}
+.fz-pick .fp-t{font-size:12px;font-weight:800;color:var(--ink)}
+.fz-pick .fp-d{font-size:9.5px;color:var(--faint);margin-top:2px}
+.fz-q{font-size:14.5px;font-weight:900;color:var(--ink);margin:6px 0 12px}
+.fz-opts{display:flex;flex-direction:column;gap:10px}
+.fz-opt{display:flex;align-items:center;gap:12px;padding:14px 15px;border:1.5px solid var(--line);border-radius:15px;background:#fff;cursor:pointer;transition:all .2s}
+.fz-opt.on{border-color:var(--orange);background:#FFF7ED;box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+.fz-opt .fo-ico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:17px;flex:none}
+.fz-opt .fo-t{font-size:13px;font-weight:800;color:var(--ink);flex:1}
+.fz-opt .fo-d{font-size:10.5px;color:var(--faint)}
+.fz-opt .fo-radio{width:19px;height:19px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.fz-opt.on .fo-radio{border-color:var(--orange)}
+.fz-opt.on .fo-radio i{width:9px;height:9px;border-radius:50%;background:var(--orange)}
+.fz-gen{text-align:center;padding:40px 0 24px}
+.fz-gen-ico{width:70px;height:70px;margin:0 auto 16px;border-radius:50%;background:linear-gradient(135deg,#FFF0F5,#FFF7ED);display:grid;place-items:center;color:var(--orange);font-size:32px;animation:genPulse 1.2s ease infinite}
+@keyframes genPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.fz-gen-t{font-size:15px;font-weight:900;color:var(--ink)}
+.fz-gen-s{font-size:11px;color:var(--faint);margin-top:5px}
+.fz-gen-bar{width:220px;height:7px;border-radius:7px;background:var(--line);margin:16px auto 0;overflow:hidden}
+.fz-gen-bar i{display:block;height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,#F97316,#F43F5E);transition:width .15s linear}
+.fz-res{padding:4px 0 6px}
+.fz-res-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0}
+.fz-tag{background:#FFF7ED;border:1px solid #F5E2CE;color:#B45309;font-size:11.5px;font-weight:800;padding:6px 13px;border-radius:20px}
+.fz-res-title{font-size:14px;font-weight:900;color:var(--ink);text-align:center;margin-top:4px}
+.fz-res-sub{font-size:11px;color:var(--faint);text-align:center;margin:5px 0 16px}
+.rec-card{display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:15px;background:#fff;border:1px solid var(--line);margin-bottom:10px}
+.rec-card .rc-ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:18px;flex:none}
+.rec-card .rc-t{font-size:13px;font-weight:800;color:var(--ink)}
+.rec-card .rc-d{font-size:10.5px;color:var(--faint);margin-top:2px}
+.rec-card .rc-btn{font-size:11px;font-weight:800;color:#fff;background:var(--orange);border:none;border-radius:9px;padding:6px 12px;font-family:var(--font);cursor:pointer}
+.chip-gray{background:#f1f1f3;color:var(--muted)}
+.chip-sky{background:var(--sky-soft);color:#0284c7}
+.src-tag{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:700;color:var(--muted);background:#f1f1f3;border-radius:16px;padding:3px 9px}
+.src-tag .iconify{font-size:10.5px}
+.src-tag b{color:var(--orange-deep)}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;border:none;cursor:pointer;font-family:var(--font);font-weight:800;border-radius:14px;padding:13px 18px;font-size:14px;transition:all .2s;width:100%}
+.btn .iconify{font-size:17px}
+.btn-primary{background:var(--ink);color:#fff;font-style:italic}
+.btn-primary:active{transform:scale(.98);background:#000}
+.btn-orange{background:var(--orange);color:#fff;box-shadow:0 8px 20px rgba(249,115,22,.35)}
+.btn-orange:active{transform:scale(.98);background:var(--orange-deep)}
+.btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn-ghost:active{background:#fafafa}
+.btn-sm{padding:9px 14px;font-size:12.5px;border-radius:11px;width:auto}
+.progress{height:7px;background:#f1f1f3;border-radius:6px;overflow:hidden}
+.progress i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--orange),#FB923C);transition:width .8s ease}
+.badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 6px;cursor:pointer;transition:transform .15s}
+.badge:active{transform:scale(.94)}
+.badge .b-ico{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px}
+.badge .b-ico.got{background:linear-gradient(135deg,#F97316,#F43F5E);color:#fff;box-shadow:0 6px 14px rgba(249,115,22,.4)}
+.badge .b-ico.lock{background:#f1f1f3;color:#c4c4c9}
+.badge .b-name{font-size:10px;font-weight:700;color:var(--muted)}
+.badge .b-name.got{color:var(--orange-deep)}
+.path-step{display:flex;gap:12px;position:relative;padding-bottom:20px}
+.path-step::before{content:'';position:absolute;left:17px;top:38px;bottom:2px;width:2px;background:#eeeef0}
+.path-step:last-child::before{display:none}
+.path-dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:15px;flex:none;z-index:1;font-family:var(--num);font-weight:900}
+.path-dot.done{background:var(--green);color:#fff;box-shadow:0 0 0 5px var(--green-soft)}
+.path-dot.now{background:var(--orange);color:#fff;box-shadow:0 0 0 5px var(--orange-soft);animation:nowPulse 1.8s infinite}
+.path-dot.wait{background:#f1f1f3;color:#c4c4c9}
+@keyframes nowPulse{0%,100%{box-shadow:0 0 0 5px var(--orange-soft)}50%{box-shadow:0 0 0 9px rgba(249,115,22,.14)}}
+.chat-wrap{padding:14px 14px 8px;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:9px;max-width:88%;animation:msgIn .3s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}}
+.msg .ava{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:15px;margin-top:2px}
+.msg .bub{padding:10px 13px;border-radius:15px;font-size:13.5px;line-height:1.75}
+.msg.ai{align-self:flex-start}
+.msg.ai .ava{background:var(--orange-soft)}
+.msg.ai .bub{background:#fff;border:1px solid #f0f0f1;border-top-left-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.msg.me .ava{background:#f1f1f3}
+.msg.me .bub{background:var(--ink);color:#fff;border-top-right-radius:5px}
+.msg .hint{margin-top:6px;display:flex;align-items:center;gap:5px;font-size:10px;color:var(--faint)}
+.msg .hint .iconify{font-size:11px}
+.q-opt{background:#fff;border:1.5px solid var(--line);border-radius:13px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .2s;width:100%;font-family:var(--font)}
+.q-opt:active{border-color:var(--orange);background:var(--orange-soft);color:var(--orange-deep)}
+.q-opt .iconify{font-size:15px;color:var(--orange)}
+.chat-input{display:flex;gap:9px;padding:10px 14px 14px;align-items:center;position:sticky;bottom:0;background:var(--bg)}
+.view.chat-v{height:100%;display:none;flex-direction:column}
+.view.chat-v.on{display:flex}
+.view.chat-v .chat-wrap{flex:1;overflow-y:auto;min-height:0}
+.view.chat-v .chat-input{position:static;flex:none}
+.chat-input input{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:22px;padding:11px 16px;font-family:var(--font);font-size:13px;outline:none}
+.chat-input input:focus{border-color:var(--orange)}
+.chat-input .send{width:40px;height:40px;border-radius:50%;background:var(--orange);color:#fff;border:none;display:grid;place-items:center;cursor:pointer;font-size:17px;flex:none;box-shadow:0 5px 12px rgba(249,115,22,.35)}
+.err-card{border-radius:15px;padding:13px 15px;border:1px solid #f1f0f0;background:#fff;margin-bottom:11px}
+.err-head{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.err-q{font-size:13.5px;font-weight:700;line-height:1.7}
+.err-tags{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.err-tag{font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--rose-soft);color:#e11d48}
+.err-tag.g{background:var(--green-soft);color:#059669}
+.diag-hero{background:linear-gradient(160deg,#18181b,#27272a);border-radius:18px;padding:20px;color:#fff;position:relative;overflow:hidden;margin-bottom:14px}
+.diag-hero::after{content:'';position:absolute;right:-40px;bottom:-60px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.3),transparent 70%)}
+.diag-score{font-family:var(--num);font-style:italic;font-weight:900;font-size:44px;line-height:1;color:#fff}
+.diag-score span{font-size:20px;color:var(--orange)}
+.diag-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:5px}
+.confi-bar{display:flex;align-items:center;gap:8px;margin-top:14px}
+.confi-bar .lbl{font-size:10px;color:rgba(255,255,255,.6);flex:none}
+.confi-bar .progress{flex:1;background:rgba(255,255,255,.12)}
+.dim-row{display:flex;align-items:center;gap:10px;padding:10px 0}
+.dim-row+.dim-row{border-top:1px solid #f6f6f7}
+.dim-name{width:92px;flex:none;font-size:12.5px;font-weight:700}
+.dim-track{flex:1;height:8px;background:#f1f1f3;border-radius:6px;overflow:hidden}
+.dim-track i{display:block;height:100%;border-radius:6px}
+.dim-val{font-family:var(--num);font-size:12.5px;font-weight:800;width:34px;text-align:right}
+.read-card{display:flex;gap:12px;padding:13px;border-radius:15px;background:#fff;margin-bottom:11px;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.read-cover{width:52px;height:68px;border-radius:9px;display:grid;place-items:center;font-size:20px;color:#fff;flex:none;font-weight:900;font-style:italic}
+.read-info{flex:1;min-width:0}
+.read-title{font-size:13px;font-weight:800}
+.read-meta{font-size:10.5px;color:var(--faint);margin-top:4px}
+.read-level{font-size:9.5px;font-weight:800;border-radius:7px;padding:2.5px 7px}
+.audio-row{display:flex;align-items:center;gap:12px;padding:13px 15px;background:#fff;border-radius:14px;margin-bottom:11px}
+.audio-play{width:40px;height:40px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-size:16px;flex:none;box-shadow:0 5px 12px rgba(249,115,22,.35)}
+.wave{flex:1;display:flex;align-items:center;gap:2.5px;height:26px}
+.wave i{width:3px;border-radius:2px;background:linear-gradient(180deg,var(--orange),#FDBA74);animation:wave 1s ease-in-out infinite}
+.wave i:nth-child(2n){animation-delay:.2s}
+.wave i:nth-child(3n){animation-delay:.4s}
+@keyframes wave{0%,100%{height:6px}50%{height:24px}}
+.score-big{font-family:var(--num);font-style:italic;font-weight:900;font-size:24px;color:var(--orange);flex:none}
+.navhead{display:flex;align-items:center;gap:10px;padding:12px 14px 6px;position:sticky;top:0;background:var(--bg);z-index:20}
+.navhead .back{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;font-size:15px;flex:none}
+.navhead .back:active{background:#f4f4f5}
+.navhead h2{font-size:15.5px;font-weight:900;font-style:italic}
+.navhead .src{margin-left:auto}
+.sheet-mask{position:fixed;inset:0;background:rgba(15,15,20,.5);z-index:90;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.sheet-mask.on{display:flex}
+.sheet{width:375px;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px 30px;animation:sheetIn .3s cubic-bezier(.2,.9,.3,1);max-height:70vh;overflow-y:auto}
+@keyframes sheetIn{from{transform:translateY(100%)}}
+.sheet-handle{width:38px;height:4px;border-radius:4px;background:#e5e5e7;margin:0 auto 16px}
+.book-page{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 20px;line-height:2.1;font-size:13.5px;color:#3f3f46}
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(80px);background:#18181b;color:#fff;font-size:12.5px;font-weight:600;padding:10px 18px;border-radius:20px;z-index:120;opacity:0;transition:all .35s;box-shadow:0 14px 40px rgba(0,0,0,.35);white-space:nowrap;max-width:85vw;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.switch{position:relative;width:40px;height:22px;background:#e5e5e7;border-radius:20px;cursor:pointer;transition:.25s;flex:none}
+.switch.on{background:var(--orange)}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on::after{left:21px}
+.typing-dots{display:inline-flex;gap:4px;align-items:center;padding:2px 0}
+.typing-dots i{width:5px;height:5px;border-radius:50%;background:var(--orange);opacity:.4;animation:tdot 1.2s infinite}
+.typing-dots i:nth-child(2){animation-delay:.15s}
+.typing-dots i:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,100%{opacity:.25;transform:none}50%{opacity:1;transform:translateY(-2px)}}
+</style>
+<script defer src="/assets/legacy/student.legacy.js"></script>
+</head>
+<body>
+
+<div class="stage-head">
+  <div class="stage-title"><span class="iconify" data-icon="ph:plant-fill"></span>乡芽 · 学生端 — 李小雨的学习小屋</div>
+  <div class="stage-sub">
+    <a href="[object Object].html">教师端</a>｜<a href="[object Object].html" class="on">学生端</a>｜<a href="[object Object].html">家长端</a>｜<a href="[object Object].html">管理端</a>
+    <span style="margin-left:10px;color:rgba(255,255,255,.35)">原型演示 DEMO · 模拟数据已脱敏</span>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="statusbar"><span class="time">9:41</span><span class="icons"><span class="iconify" data-icon="ph:cell-signal-full"></span><span class="iconify" data-icon="ph:wifi-high"></span><span class="iconify" data-icon="ph:battery-full"></span></span></div>
+
+  <div class="phone-screen" id="screen">
+
+    <!-- ============ 学习首页 S7/S11 ============ -->
+    <div class="view on" id="view-learn">
+      <div class="hero">
+        <div class="hero-float"><div class="big">12<span>天</span></div><div class="lab">连续打卡</div></div>
+        <div class="hero-hi">早上好，小雨 <span class="iconify" data-icon="ph:sun-horizon"></span></div>
+        <div class="hero-name">今天也要<b>闪闪发光</b>！</div>
+        <div class="hero-badges">
+          <span class="hb"><span class="iconify" data-icon="ph:fire"></span>连续打卡 12 天</span>
+          <span class="hb"><span class="iconify" data-icon="ph:star"></span>本周进步 +21</span>
+          <span class="hb"><span class="iconify" data-icon="ph:plant"></span>种子徽章 ×6</span>
+        </div>
+      </div>
+      <div class="pt">
+        <div class="section-title"><span class="iconify" data-icon="ph:clipboard-text"></span>今日学习任务<span class="more" onclick="go('view-plan')">查看计划 <span class="iconify" data-icon="ph:caret-right"></span></span></div>
+        <div class="card card-pad" style="margin-bottom:4px">
+          <div class="row-card" onclick="go('view-plan')">
+            <div class="ric ric-orange"><span class="iconify" data-icon="ph:target"></span></div>
+            <div style="flex:1"><div class="r-title">简易方程 · 巩固 3 题</div><div class="r-sub">根据你的掌握度智能推荐</div></div>
+            <div style="flex:none;width:76px"><div class="progress"><i style="width:66%"></i></div><div style="font-size:9.5px;color:var(--faint);text-align:center;margin-top:5px">2/3 完成</div></div>
+          </div>
+          <div class="row-card" onclick="go('view-read')">
+            <div class="ric ric-sky"><span class="iconify" data-icon="ph:book-open"></span></div>
+            <div style="flex:1"><div class="r-title">阅读《小英雄雨来》第 5 章</div><div class="r-sub">分级阅读 · 12 分钟</div></div>
+            <span class="chip chip-sky">未开始</span>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-eng')">
+            <div class="ric ric-green"><span class="iconify" data-icon="ph:microphone-stage"></span></div>
+            <div style="flex:1"><div class="r-title">英语听说 · 我的周末</div><div class="r-sub">跟读 6 句 · 目标 85 分</div></div>
+            <span class="chip chip-green">进行中</span>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="iconify" data-icon="ph:calendar-check"></span>学习打卡 <span class="more" onclick="openSheet('checkin')">查看徽章 <span class="iconify" data-icon="ph:caret-right"></span></span></div>
+        <div class="card card-pad" style="margin-bottom:4px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:12.5px;font-weight:800">本周打卡</div>
+            <div style="font-size:11px;color:var(--faint)">已连续 <b style="color:var(--orange)">12</b> 天 · 本周 5/7</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+            <div style="text-align:center"><div class="path-dot done" style="width:32px;height:32px;font-size:13px;margin:0 auto"><span class="iconify" data-icon="ph:check"></span></div><div style="font-size:9.5px;color:var(--faint);margin-top:5px">周一</div></div>
+            <div style="text-align:center"><div class="path-dot done" style="width:32px;height:32px;font-size:13px;margin:0 auto"><span class="iconify" data-icon="ph:check"></span></div><div style="font-size:9.5px;color:var(--faint);margin-top:5px">周二</div></div>
+            <div style="text-align:center"><div class="path-dot done" style="width:32px;height:32px;font-size:13px;margin:0 auto"><span class="iconify" data-icon="ph:check"></span></div><div style="font-size:9.5px;color:var(--faint);margin-top:5px">周三</div></div>
+            <div style="text-align:center"><div class="path-dot done" style="width:32px;height:32px;font-size:13px;margin:0 auto"><span class="iconify" data-icon="ph:check"></span></div><div style="font-size:9.5px;color:var(--faint);margin-top:5px">周四</div></div>
+            <div style="text-align:center"><div class="path-dot now" style="width:32px;height:32px;font-size:13px;margin:0 auto"><span class="iconify" data-icon="ph:check"></span></div><div style="font-size:9.5px;color:var(--orange-deep);font-weight:700;margin-top:5px">周五</div></div>
+            <div style="text-align:center"><div class="path-dot wait" style="width:32px;height:32px;font-size:13px;margin:0 auto">6</div><div style="font-size:9.5px;color:var(--faint);margin-top:5px">周六</div></div>
+            <div style="text-align:center"><div class="path-dot wait" style="width:32px;height:32px;font-size:13px;margin:0 auto">7</div><div style="font-size:9.5px;color:var(--faint);margin-top:5px">周日</div></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="checkinNow(this)"><span class="iconify" data-icon="ph:thumbs-up"></span> 完成今日打卡</button>
+        </div>
+
+        <div class="section-title"><span class="iconify" data-icon="ph:heart"></span>今天的心情</div>
+        <div style="background:linear-gradient(135deg,#FFF1E8,#FFE4D6);border-radius:16px;padding:15px 16px;display:flex;align-items:center;gap:13px;border:1px solid #FFD9C0">
+          <div style="font-size:30px;line-height:1"><span class="iconify" data-icon="ph:plant"></span></div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:800;color:#9a3412">暖暖的小提醒</div>
+            <div style="font-size:11.5px;color:#b45309;line-height:1.6;margin-top:3px">写作业累了就休息 5 分钟，喝口水，看看窗外。想爸爸妈妈的时候，可以在「辅导」里跟他们留言噢～</div>
+          </div>
+        </div>
+        <div style="font-size:9.5px;color:var(--faint);margin-top:8px;display:flex;align-items:center;gap:4px"><span class="iconify" data-icon="ph:shield-check"></span>轻提醒由学习行为自动触发 · 不涉及心理诊断 · 求助渠道已接入</div>
+      </div>
+    </div>
+
+    <!-- ============ 学习计划 S6 ============ -->
+    <div class="view" id="view-plan">
+      <div class="navhead"><div class="back" onclick="go('view-learn')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>我的学习计划</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>D6→S3→S6</span></div>
+      <div class="pt">
+        <div style="background:linear-gradient(135deg,#18181b,#27272a);border-radius:16px;padding:16px;color:#fff;margin-bottom:14px">
+          <div style="font-size:11px;color:rgba(255,255,255,.6)">当前阶段 · 第 2 周</div>
+          <div style="font-size:17px;font-weight:900;font-style:italic;margin-top:4px">攻克「简易方程」<span style="color:var(--orange)"> · ZPD 动态调整中</span></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+            <div class="progress" style="flex:1;background:rgba(255,255,255,.12)"><i style="width:62%;background:linear-gradient(90deg,var(--orange),#FB923C)"></i></div>
+            <span style="font-family:var(--num);font-weight:900;font-size:14px;color:var(--orange)">62%</span>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:7px">每完成一步，难度与内容会根据你的作答实时微调</div>
+        </div>
+        <div class="path-step"><div class="path-dot done"><span class="iconify" data-icon="ph:check"></span></div><div style="flex:1"><div class="r-title">用字母表示数 · 概念</div><div class="r-sub">已完成 4/4 题 · 掌握度 92%</div></div><span class="chip chip-green">掌握</span></div>
+        <div class="path-step"><div class="path-dot done"><span class="iconify" data-icon="ph:check"></span></div><div style="flex:1"><div class="r-title">解方程 · 一步方程</div><div class="r-sub">已完成 5/5 题 · 掌握度 88%</div></div><span class="chip chip-green">掌握</span></div>
+        <div class="path-step"><div class="path-dot now">3</div><div style="flex:1"><div class="r-title">解方程 · 两步方程（进行中）</div><div class="r-sub">今日 2/3 题 · 上次错因：移项符号</div></div><span class="chip chip-orange">进行中</span></div>
+        <div class="path-step"><div class="path-dot wait">4</div><div style="flex:1"><div class="r-title">列方程解应用题 · 生活情境</div><div class="r-sub">3 题 · 含"赶集称重"情境题</div></div><span class="chip chip-gray">待解锁</span></div>
+        <div class="path-step"><div class="path-dot wait">5</div><div style="flex:1"><div class="r-title">综合闯关 · 本周小结</div><div class="r-sub">完成后解锁「方程小能手」徽章</div></div><span class="chip chip-gray">待解锁</span></div>
+        <button class="btn btn-orange" style="margin-top:6px" onclick="toast('已为你重新生成 3 道练习题')"><span class="iconify" data-icon="ph:magic-wand"></span> 继续今日练习</button>
+      </div>
+    </div>
+
+    <!-- ============ 分级阅读 S10 ============ -->
+    <div class="view" id="view-read">
+      <div class="navhead"><div class="back" onclick="go('view-learn')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>分级阅读</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>D1 内置书库</span></div>
+      <div class="pt">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div style="flex:1;background:var(--orange);color:#fff;text-align:center;padding:8px;border-radius:10px;font-size:11px;font-weight:800">你的级别：L4 桥梁书</div>
+          <div style="flex:1;background:#fff;border:1px solid var(--line);text-align:center;padding:8px;border-radius:10px;font-size:11px;color:var(--muted);font-weight:700">本周阅读 3 本 · 44 分钟</div>
+        </div>
+        <div class="read-card" onclick="go('view-read-detail')">
+          <div class="read-cover" style="background:linear-gradient(135deg,#F97316,#F43F5E)">雨</div>
+          <div class="read-info">
+            <div class="read-title">《小英雄雨来》</div>
+            <div class="read-meta">推荐 L4 · 约 12 分钟 · 已读 4/6 章</div>
+            <div class="progress" style="margin-top:7px;height:5px"><i style="width:66%"></i></div>
+          </div>
+          <span class="chip chip-orange">继续读</span>
+        </div>
+        <div class="read-card">
+          <div class="read-cover" style="background:linear-gradient(135deg,#0EA5E9,#6366F1)">山</div>
+          <div class="read-info"><div class="read-title">《草房子》节选</div><div class="read-meta">推荐 L4 · 约 15 分钟 · 今日新推荐</div></div>
+          <span class="chip chip-sky">未开始</span>
+        </div>
+        <div class="read-card">
+          <div class="read-cover" style="background:linear-gradient(135deg,#10B981,#14B8A6)">星</div>
+          <div class="read-info"><div class="read-title">《十万个为什么·星空篇》</div><div class="read-meta">推荐 L3 · 约 10 分钟 · 适合科学课补充</div></div>
+          <span class="chip chip-green">未开始</span>
+        </div>
+        <div style="margin-top:14px">
+          <div class="section-title" style="margin-top:6px"><span class="iconify" data-icon="ph:question"></span>读完答一答（读后问答）</div>
+          <div class="card card-pad">
+            <div style="font-size:13px;font-weight:800;line-height:1.7">读完《小英雄雨来》第 5 章，你觉得雨来为什么要冒着危险送信？</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+              <button class="q-opt" onclick="toast('回答正确！+5 阅读积分')"><span class="iconify" data-icon="ph:check"></span>因为他想保护村里的乡亲</button>
+              <button class="q-opt" onclick="toast('再想想～雨来还想了别的办法')"><span class="iconify" data-icon="ph:x"></span>因为他喜欢冒险</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 阅读详情 -->
+    <div class="view" id="view-read-detail">
+      <div class="navhead"><div class="back" onclick="go('view-read')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>《小英雄雨来》</h2></div>
+      <div style="padding:16px">
+        <div class="book-page">
+          <p style="text-align:center;font-weight:900;font-size:15px;margin-bottom:14px">第五章 · 夜送情报</p>
+          <p>夜里的芦苇荡静得能听见露水滑落的声音。雨来攥紧那封信，鞋底在泥路上发出沙沙的轻响。他想起了爹说过的话："打仗不光靠枪，还靠这儿。"爹指了指自己的胸口。</p>
+          <p style="margin-top:10px">河水映着半轮月亮，雨来把信塞进贴身的口袋，深吸一口气，朝着村东头的碾坊走去……</p>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn btn-orange btn-sm" onclick="toast('阅读进度已保存 · 第 6 章已解锁')"><span class="iconify" data-icon="ph:bookmark-simple"></span> 读完本章</button>
+          <button class="btn btn-ghost btn-sm" onclick="toast('已为你朗读本章（语音模式）')"><span class="iconify" data-icon="ph:speaker-high"></span> 听朗读</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 辅导首页 ============ -->
+    <div class="view" id="view-tutor">
+      <div class="navhead"><div class="back" onclick="go('view-learn')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>学习辅导</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>D1 教材 + D2 图谱</span></div>
+      <div class="pt">
+        <div style="background:linear-gradient(135deg,#F97316,#F43F5E);border-radius:16px;padding:16px;color:#fff;margin-bottom:16px">
+          <div style="font-size:12px;opacity:.85;font-weight:600">苏格拉底辅导 · 只引导，不直接给答案</div>
+          <div style="font-size:16px;font-weight:900;font-style:italic;margin-top:5px">"我不会直接告诉你答案，但会陪你把答案想出来"</div>
+          <button class="btn" style="margin-top:12px;background:#fff;color:#F97316;font-weight:900" onclick="go('view-soc')"><span class="iconify" data-icon="ph:chats-circle"></span> 开始辅导</button>
+        </div>
+        <div class="card" style="margin-bottom:4px">
+          <div class="row-card" onclick="go('view-soc')">
+            <div class="ric ric-orange"><span class="iconify" data-icon="ph:chats-circle"></span></div>
+            <div style="flex:1"><div class="r-title">苏格拉底辅导</div><div class="r-sub">拍照或输入题目，分步引导思考</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-photo')">
+            <div class="ric ric-ink"><span class="iconify" data-icon="ph:camera"></span></div>
+            <div style="flex:1"><div class="r-title">拍照作业</div><div class="r-sub">拍下题目，自动识别成文字</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-errors')">
+            <div class="ric ric-rose"><span class="iconify" data-icon="ph:x-circle"></span></div>
+            <div style="flex:1"><div class="r-title">错题本 <span class="chip chip-rose" style="margin-left:5px">8 题待复习</span></div><div class="r-sub">自动归类 · 错因分析 · 智能复习</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-qa')">
+            <div class="ric ric-sky"><span class="iconify" data-icon="ph:magnifying-glass"></span></div>
+            <div style="flex:1"><div class="r-title">知识问答</div><div class="r-sub">不懂就问 · 答案带课本出处</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-eng')">
+            <div class="ric ric-green"><span class="iconify" data-icon="ph:microphone-stage"></span></div>
+            <div style="flex:1"><div class="r-title">英语听说陪练</div><div class="r-sub">AI 陪你说英语 · 发音评测</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+          <div class="row-card" onclick="go('view-cn')">
+            <div class="ric ric-amber"><span class="iconify" data-icon="ph:book-open-text"></span></div>
+            <div style="flex:1"><div class="r-title">语文朗读 · 普通话练习</div><div class="r-sub">逐句跟读 · 发音纠正</div></div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 苏格拉底辅导 S1 ============ -->
+    <div class="view chat-v" id="view-soc">
+      <div class="navhead"><div class="back" onclick="go('view-tutor')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>苏格拉底辅导</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>D1+D2 图谱</span></div>
+      <div class="chat-wrap" id="socChat">
+        <div class="msg ai"><div class="ava"><span class="iconify" data-icon="ph:robot"></span></div><div class="bub">嗨，小雨！把你不会的题拍给我或输入给我吧～我会一步步陪你思考，<b>不直接给答案</b>噢！</div></div>
+      </div>
+      <div class="chat-input">
+        <input id="socInput" placeholder="输入题目，或点击左侧拍照">
+        <button class="send" style="background:#f1f1f3;color:#71717a" onclick="go('view-photo')"><span class="iconify" data-icon="ph:camera"></span></button>
+        <button class="send" onclick="socSend()"><span class="iconify" data-icon="ph:paper-plane-tilt-fill"></span></button>
+      </div>
+    </div>
+
+    <!-- ============ 拍照作业 S2 ============ -->
+    <div class="view" id="view-photo">
+      <div class="navhead"><div class="back" onclick="go('view-tutor')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>拍照作业</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>OCR → 结构化题目</span></div>
+      <div class="pt">
+        <div style="border:2px dashed #e3a080;border-radius:16px;padding:44px 20px;text-align:center;background:#FFF8F2;cursor:pointer" onclick="startPhoto()">
+          <span class="iconify" data-icon="ph:scan" style="font-size:40px;color:var(--orange)"></span>
+          <p style="font-size:14px;font-weight:800;margin-top:12px">对准题目拍照</p>
+          <p style="font-size:11px;color:var(--faint);margin-top:5px">支持竖式、应用题、英语题 · 自动矫正透视</p>
+        </div>
+        <div id="photoResult" style="display:none;margin-top:16px">
+          <div class="card card-pad" style="animation:viewIn .4s">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><span class="ric ric-green" style="width:32px;height:32px;font-size:14px"><span class="iconify" data-icon="ph:check"></span></span><div style="font-size:13px;font-weight:800">识别成功 · 识别率 96.8%</div></div>
+            <div style="background:#f7f7f7;border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.8">解方程：<b>3(x + 4) = 27</b>，求 x 的值。</div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button class="btn btn-orange btn-sm" onclick="go('view-soc');setTimeout(()=>socAsk('3(x + 4) = 27，求 x'),300)"><span class="iconify" data-icon="ph:chats-circle"></span> 交给辅导老师</button>
+              <button class="btn btn-ghost btn-sm" onclick="toast('已加入今日练习')"><span class="iconify" data-icon="ph:plus"></span> 加入练习</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 错题本 S5 ============ -->
+    <div class="view" id="view-errors">
+      <div class="navhead"><div class="back" onclick="go('view-tutor')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>错题本</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>S3 诊断回流</span></div>
+      <div class="pt">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px;text-align:center"><div style="font-family:var(--num);font-size:19px;font-weight:900;color:var(--rose)">23</div><div style="font-size:10px;color:var(--faint);margin-top:3px">错题总数</div></div>
+          <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px;text-align:center"><div style="font-family:var(--num);font-size:19px;font-weight:900;color:var(--green)">8</div><div style="font-size:10px;color:var(--faint);margin-top:3px">今日待复习</div></div>
+          <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px;text-align:center"><div style="font-family:var(--num);font-size:19px;font-weight:900;color:var(--orange)">15</div><div style="font-size:10px;color:var(--faint);margin-top:3px">已掌握</div></div>
+        </div>
+        <div class="err-card">
+          <div class="err-head"><span class="iconify" data-icon="ph:warning-circle" style="color:var(--rose)"></span> 错因：移项符号错误</div>
+          <div class="err-q">3x + 5 = 20，解得 x = ____</div>
+          <div class="err-tags"><span class="err-tag">数学 · 解方程</span><span class="err-tag">错 3 次</span><span class="err-tag g">最近答对 ✓</span></div>
+        </div>
+        <div class="err-card">
+          <div class="err-head"><span class="iconify" data-icon="ph:warning-circle" style="color:var(--rose)"></span> 错因：未识别等量关系</div>
+          <div class="err-q">长方形菜地周长 48 米，长是宽的 2 倍，求面积</div>
+          <div class="err-tags"><span class="err-tag">数学 · 列方程</span><span class="err-tag">错 2 次</span><span class="err-tag">错因标签已关联</span></div>
+        </div>
+        <button class="btn btn-orange" onclick="toast('已生成错题复习计划（3 题今日）')"><span class="iconify" data-icon="ph:magic-wand"></span> 智能复习这 8 题</button>
+      </div>
+    </div>
+
+    <!-- ============ 知识问答 S4 ============ -->
+    <div class="view chat-v" id="view-qa">
+      <div class="navhead"><div class="back" onclick="go('view-tutor')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>知识问答</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>RAG 检索教材</span></div>
+      <div class="chat-wrap" id="qaChat">
+        <div class="msg ai"><div class="ava"><span class="iconify" data-icon="ph:robot"></span></div><div class="bub">有什么不懂的都可以问我，我会告诉你答案，还会标出它在课本的哪一页～</div></div>
+      </div>
+      <div class="chat-input">
+        <input id="qaInput" placeholder="输入你的问题…">
+        <button class="send" onclick="qaSend()"><span class="iconify" data-icon="ph:paper-plane-tilt-fill"></span></button>
+      </div>
+    </div>
+
+    <!-- ============ 英语听说 S8 ============ -->
+    <div class="view" id="view-eng">
+      <div class="navhead"><div class="back" onclick="go('view-tutor')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>英语听说陪练</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>ASR + 发音评测</span></div>
+      <div class="pt">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px;text-align:center"><div style="font-family:var(--num);font-size:19px;font-weight:900;color:var(--green)">92</div><div style="font-size:10px;color:var(--faint);margin-top:3px">今日得分</div></div>
+          <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px;text-align:center"><div style="font-family:var(--num);font-size:19px;font-weight:900;color:var(--orange)">6</div><div style="font-size:10px;color:var(--faint);margin-top:3px">连续天数</div></div>
+          <div style="flex:1;background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px;text-align:center"><div style="font-family:var(--num);font-size:19px;font-weight:900;color:var(--sky)">Lv.3</div><div style="font-size:10px;color:var(--faint);margin-top:3px">口语等级</div></div>
+        </div>
+        <div class="audio-row">
+          <div class="audio-play" onclick="toggleWave(this)"><span class="iconify" data-icon="ph:play-fill"></span></div>
+          <div style="flex:1"><div class="r-title" style="font-size:13px">1. My weekend is fun.</div><div class="wave" style="margin-top:6px" data-ani><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="score-big">90</div>
+        </div>
+        <div class="audio-row">
+          <div class="audio-play" onclick="toggleWave(this)"><span class="iconify" data-icon="ph:play-fill"></span></div>
+          <div style="flex:1"><div class="r-title" style="font-size:13px">2. I visit my grandparents.</div><div class="wave" style="margin-top:6px" data-ani><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="score-big" style="color:var(--amber)">84</div>
+        </div>
+        <div class="audio-row">
+          <div class="audio-play" onclick="toggleWave(this)"><span class="iconify" data-icon="ph:play-fill"></span></div>
+          <div style="flex:1"><div class="r-title" style="font-size:13px">3. The market is busy today.</div><div class="wave" style="margin-top:6px" data-ani><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="score-big" style="color:var(--green)">95</div>
+        </div>
+        <button class="btn btn-orange" onclick="toast('已开始跟读第 4 句 · 请大声朗读')"><span class="iconify" data-icon="ph:microphone"></span> 开始跟读下一句</button>
+      </div>
+    </div>
+
+    <!-- ============ 语文朗读 S9 ============ -->
+    <div class="view" id="view-cn">
+      <div class="navhead"><div class="back" onclick="go('view-tutor')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>语文朗读 · 普通话</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>朗读评测</span></div>
+      <div class="pt">
+        <div class="card card-pad" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:800;color:var(--faint);margin-bottom:8px">《山行》· 杜牧</div>
+          <div style="font-size:16px;line-height:2.2;letter-spacing:1px">远上寒山石径斜，<span style="color:var(--rose)">白云生处有人家。</span>停车坐爱枫林晚，霜叶红于二月花。</div>
+          <div style="font-size:10.5px;color:var(--faint);margin-top:8px">红色为待加强音节：生(shēng) · 处(chù)</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-orange btn-sm" onclick="toast('正在听你朗读…评测中')"><span class="iconify" data-icon="ph:microphone"></span> 跟读评测</button>
+          <button class="btn btn-ghost btn-sm" onclick="toast('已播放标准朗读示范')"><span class="iconify" data-icon="ph:speaker-high"></span> 听示范</button>
+        </div>
+        <div style="background:linear-gradient(135deg,#FFF9F0,#FFF1E0);border:1px solid #FDE8C4;border-radius:14px;padding:14px 16px;margin-top:14px">
+          <div style="font-size:12px;font-weight:800;color:#b45309;margin-bottom:8px"><span class="iconify" data-icon="ph:target" style="vertical-align:-2px"></span> 上次评测：92 分</div>
+          <div style="font-size:11.5px;color:#92610c;line-height:1.7">流畅度优秀 · "生"字平舌音需再练 3 次 · 已加入明日的 5 分钟专项</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 编程启蒙 S12 ============ -->
+    <div class="view" id="view-code">
+      <div class="navhead"><div class="back" onclick="go('view-learn')"><span class="iconify" data-icon="ph:arrow-left"></span></div><h2>编程启蒙</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>引导式任务库</span></div>
+      <div class="pt">
+        <div style="background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:16px;padding:16px;color:#fff;margin-bottom:14px">
+          <div style="font-size:12px;opacity:.85">第 3 关 · 帮小明回家</div>
+          <div style="font-size:17px;font-weight:900;font-style:italic;margin-top:5px">用 3 条指令让小明走到家 <span class="iconify" data-icon="ph:house"></span></div>
+        </div>
+        <div class="card card-pad" style="margin-bottom:12px">
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <span style="background:var(--violet-soft);color:#6d28d9;border-radius:10px;padding:8px 14px;font-size:12.5px;font-weight:800;cursor:grab">⬆️ 前进</span>
+            <span style="background:var(--violet-soft);color:#6d28d9;border-radius:10px;padding:8px 14px;font-size:12.5px;font-weight:800;cursor:grab">↩️ 左转</span>
+            <span style="background:var(--violet-soft);color:#6d28d9;border-radius:10px;padding:8px 14px;font-size:12.5px;font-weight:800;cursor:grab">↪️ 右转</span>
+          </div>
+          <div style="background:#f7f7f7;border-radius:12px;padding:13px;min-height:56px;font-size:13px;color:var(--faint)">把指令拖到这里，组成小明回家的路线…</div>
+        </div>
+        <button class="btn btn-primary" onclick="toast('运行成功！小明到家了 +10 积分')"><span class="iconify" data-icon="ph:play-fill"></span> 运行</button>
+      </div>
+    </div>
+
+    <!-- ============ 认知诊断 S3 ============ -->
+    <div class="view" id="view-diag">
+      <div class="navhead"><h2 style="margin-left:2px">认知诊断</h2><span class="src src-tag"><span class="iconify" data-icon="ph:database"></span>D6 作答 → BKT 模型</span></div>
+      <div class="pt">
+        <div class="diag-hero">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6)">综合掌握度</div>
+              <div class="diag-score">74<span>%</span></div>
+              <div class="diag-sub">比上周 +6% · 基于最近 128 次作答</div>
+            </div>
+            <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;text-align:center">
+              <div style="font-family:var(--num);font-size:20px;font-weight:900;color:#FB923C">92%</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">诊断置信度</div>
+            </div>
+          </div>
+          <div class="confi-bar"><span class="lbl">置信度</span><div class="progress"><i style="width:92%"></i></div><span class="lbl" style="font-family:var(--num)">92%</span></div>
+        </div>
+        <div class="section-title" style="margin-top:4px"><span class="iconify" data-icon="ph:graph"></span>各知识点掌握度</div>
+        <div class="card card-pad">
+          <div class="dim-row"><div class="dim-name">用字母表示数</div><div class="dim-track"><i style="width:92%;background:linear-gradient(90deg,#10B981,#34D399)"></i></div><div class="dim-val" style="color:var(--green)">92%</div></div>
+          <div class="dim-row"><div class="dim-name">一步方程</div><div class="dim-track"><i style="width:88%;background:linear-gradient(90deg,#10B981,#34D399)"></i></div><div class="dim-val" style="color:var(--green)">88%</div></div>
+          <div class="dim-row"><div class="dim-name">两步方程</div><div class="dim-track"><i style="width:64%;background:linear-gradient(90deg,#F97316,#FB923C)"></i></div><div class="dim-val" style="color:var(--orange)">64%</div></div>
+          <div class="dim-row"><div class="dim-name">列方程应用题</div><div class="dim-track"><i style="width:47%;background:linear-gradient(90deg,#F43F5E,#FB7185)"></i></div><div class="dim-val" style="color:var(--rose)">47%</div></div>
+          <div class="dim-row"><div class="dim-name">多边形面积</div><div class="dim-track"><i style="width:58%;background:linear-gradient(90deg,#F59E0B,#FBBF24)"></i></div><div class="dim-val" style="color:var(--amber)">58%</div></div>
+        </div>
+        <div class="section-title"><span class="iconify" data-icon="ph:puzzle-piece"></span>本次诊断的错因分析</div>
+        <div class="card card-pad">
+          <div class="err-card" style="border:none;background:#fff7f7;padding:12px">
+            <div class="err-head" style="color:var(--rose)"><span class="iconify" data-icon="ph:target" style="vertical-align:-2px"></span> 主要错因 · 移项符号错误</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8">最近 6 次两步方程作答中 4 次在"移项变号"环节失分 · 证据题：练习 3-2、3-5、3-9</div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn btn-orange btn-sm" onclick="go('view-plan')"><span class="iconify" data-icon="ph:magic-wand"></span> 生成强化计划</button>
+              <button class="btn btn-ghost btn-sm" onclick="toast('错因报告已生成')"><span class="iconify" data-icon="ph:download-simple"></span> 错因报告</button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--faint);display:flex;align-items:center;gap:4px;margin-top:8px"><span class="iconify" data-icon="ph:shield-check"></span>诊断可解释：每项结论均附证据题与置信度，可复现</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 兴趣 ============ -->
+    <div class="view" id="view-interest">
+      <div class="hero" style="padding-bottom:50px">
+        <div class="hero-float" style="top:auto;bottom:18px;right:18px"><div class="big">3.5<span>h</span></div><div class="lab">本周兴趣时光</div></div>
+        <div class="hero-hi">兴趣是藏在心里的种子</div>
+        <div class="hero-name">今天想学点<b>好玩的</b>吗？</div>
+        <div class="hero-badges"><span class="hb"><span class="iconify" data-icon="ph:palette"></span> 小小创作家 Lv.3</span><span class="hb"><span class="iconify" data-icon="ph:code"></span> 编程小火苗</span></div>
+      </div>
+      <div class="pt">
+        <div class="find-entry" id="findEntry" onclick="go('view-find')">
+          <div class="fe-ico"><span class="iconify" data-icon="ph:magic-wand"></span></div>
+          <div style="flex:1"><div class="fe-t">还没有你的兴趣画像？</div><div class="fe-d">3 步探索 · 帮你找到真正喜欢的事</div></div>
+          <button class="btn btn-orange btn-sm" onclick="event.stopPropagation();go('view-find')">去探索</button>
+        </div>
+        <div class="profile-row" id="interestProfile" style="display:none">
+          <div class="ric ric-orange" style="width:38px;height:38px;font-size:16px"><span class="iconify" data-icon="ph:magic-wand"></span></div>
+          <div style="flex:1">
+            <div style="font-size:12.5px;font-weight:800;color:var(--ink)">我的兴趣画像</div>
+            <div class="pr-tags" style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap"></div>
+          </div>
+          <button class="btn btn-orange btn-sm" onclick="go('view-find')">再探索</button>
+        </div>
+        <div class="section-title"><span class="iconify" data-icon="ph:sparkle"></span>我的兴趣广场</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="card" style="padding:15px" id="card-code" onclick="toast('少儿编程 · 已点亮，继续学习中')">
+            <div class="ric ric-sky" style="width:40px;height:40px;font-size:18px"><span class="iconify" data-icon="ph:code"></span></div>
+            <div style="font-size:13.5px;font-weight:800;margin-top:10px">少儿编程</div>
+            <div style="font-size:10.5px;color:var(--faint);margin-top:3px">Scratch 小游戏 · 第 3 课</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:9px"><div style="flex:1;height:5px;background:#f1f1f3;border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:64%;border-radius:4px;background:linear-gradient(90deg,#0EA5E9,#38BDF8)"></i></div><span style="font-size:9.5px;font-weight:800;color:var(--sky)">64%</span></div>
+          </div>
+          <div class="card" style="padding:15px" id="card-art" onclick="toast('画画 · 灵感记录 +1')">
+            <div class="ric ric-rose" style="width:40px;height:40px;font-size:18px"><span class="iconify" data-icon="ph:paint-brush"></span></div>
+            <div style="font-size:13.5px;font-weight:800;margin-top:10px">画画</div>
+            <div style="font-size:10.5px;color:var(--faint);margin-top:3px">水彩 · 森林小屋</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:9px"><div style="flex:1;height:5px;background:#f1f1f3;border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:38%;border-radius:4px;background:linear-gradient(90deg,#F43F5E,#FB7185)"></i></div><span style="font-size:9.5px;font-weight:800;color:var(--rose)">38%</span></div>
+          </div>
+          <div class="card" style="padding:15px" id="card-music" onclick="toast('音乐 · 今日练习 10 分钟')">
+            <div class="ric ric-amber" style="width:40px;height:40px;font-size:18px"><span class="iconify" data-icon="ph:music-notes"></span></div>
+            <div style="font-size:13.5px;font-weight:800;margin-top:10px">音乐</div>
+            <div style="font-size:10.5px;color:var(--faint);margin-top:3px">口风琴 · 小星星</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:9px"><div style="flex:1;height:5px;background:#f1f1f3;border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:52%;border-radius:4px;background:linear-gradient(90deg,#D97706,#FBBF24)"></i></div><span style="font-size:9.5px;font-weight:800;color:var(--amber-deep)">52%</span></div>
+          </div>
+          <div class="card" style="padding:15px" id="card-science" onclick="toast('科学实验 · 下周主题：水的张力')">
+            <div class="ric ric-green" style="width:40px;height:40px;font-size:18px"><span class="iconify" data-icon="ph:flask"></span></div>
+            <div style="font-size:13.5px;font-weight:800;margin-top:10px">科学实验</div>
+            <div style="font-size:10.5px;color:var(--faint);margin-top:3px">水的张力 · 小实验家</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:9px"><div style="flex:1;height:5px;background:#f1f1f3;border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:26%;border-radius:4px;background:linear-gradient(90deg,#16A34A,#4ADE80)"></i></div><span style="font-size:9.5px;font-weight:800;color:var(--green)">26%</span></div>
+          </div>
+          <div class="card" style="padding:15px" id="card-hand" onclick="toast('手工 · 折纸小课堂已收藏')">
+            <div class="ric ric-violet" style="width:40px;height:40px;font-size:18px"><span class="iconify" data-icon="ph:scissors"></span></div>
+            <div style="font-size:13.5px;font-weight:800;margin-top:10px">手工</div>
+            <div style="font-size:10.5px;color:var(--faint);margin-top:3px">折纸 · 千纸鹤</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:9px"><div style="flex:1;height:5px;background:#f1f1f3;border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:44%;border-radius:4px;background:linear-gradient(90deg,#8B5CF6,#A78BFA)"></i></div><span style="font-size:9.5px;font-weight:800;color:var(--violet)">44%</span></div>
+          </div>
+          <div class="card" style="padding:15px;border:1.5px dashed #F2D8B8;box-shadow:none" onclick="toast('告诉老师你想学什么吧')">
+            <div class="ric ric-orange" style="width:40px;height:40px;font-size:18px"><span class="iconify" data-icon="ph:plus"></span></div>
+            <div style="font-size:13.5px;font-weight:800;margin-top:10px">新兴趣</div>
+            <div style="font-size:10.5px;color:var(--faint);margin-top:3px">想学什么？告诉老师</div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="iconify" data-icon="ph:lightning"></span>正在学 · 少儿编程 <span class="more" onclick="go('view-code')">去编程</span></div>
+        <div class="card" id="learningCard" style="padding:15px 16px;background:linear-gradient(135deg,#F0F9FF,#EFF6FF)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="ric ric-sky"><span class="iconify" data-icon="ph:game-controller"></span></div>
+            <div style="flex:1">
+              <div style="font-size:13.5px;font-weight:800">我的第一个小游戏 · 贪吃蛇</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px">第 3 课 · 本周完成 2 个积木块 · 还差 3 步</div>
+            </div>
+            <button class="btn btn-orange btn-sm" onclick="go('view-code')">继续</button>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="iconify" data-icon="ph:images"></span>灵感作品墙</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#FFE4EC,#FFD2DF);aspect-ratio:1;display:grid;place-items:center" onclick="toast('《森林小屋》 · 上周作品')"><span class="iconify" data-icon="ph:house-line" style="font-size:26px;color:#F43F5E"></span></div>
+          <div style="border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#E0F2FE,#BAE6FD);aspect-ratio:1;display:grid;place-items:center" onclick="toast('《贪吃蛇草图》 · 编程草稿')"><span class="iconify" data-icon="ph:game-controller" style="font-size:26px;color:#0284C7"></span></div>
+          <div style="border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#FEF3C7,#FDE68A);aspect-ratio:1;display:grid;place-items:center" onclick="toast('折纸千纸鹤 · 手工作品')"><span class="iconify" data-icon="ph:bird" style="font-size:26px;color:#B45309"></span></div>
+        </div>
+
+        <div class="card" style="padding:15px 16px;margin-top:14px;border:1px solid #F5E2CE;background:linear-gradient(135deg,#FFF9EF,#FDF1DC)" onclick="toast('兴趣导师上线啦')">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="ric ric-amber"><span class="iconify" data-icon="ph:robot"></span></div>
+            <div style="flex:1">
+              <div style="font-size:13.5px;font-weight:800">兴趣导师 · 小芽</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px">"想学吉他还是折纸？跟我说说，帮你找小伙伴一起学"</div>
+            </div>
+            <span class="r-arrow iconify" data-icon="ph:caret-right" style="color:var(--faint)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 我的 ============ -->
+    <div class="view" id="view-me">
+      <div style="background:linear-gradient(160deg,#FFFFFF,#FFF3E8);padding:18px 18px 40px;color:#18181b;position:relative;overflow:hidden">
+        <div style="position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.16),transparent 70%)"></div>
+        <div style="display:flex;align-items:center;gap:14px;position:relative;z-index:1">
+          <div style="width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#F97316,#F43F5E);display:grid;place-items:center;font-size:26px;font-weight:900;font-style:italic;color:#fff;box-shadow:0 8px 20px rgba(249,115,22,.35)">雨</div>
+          <div>
+            <div style="font-size:18px;font-weight:900">李小雨</div>
+            <div style="font-size:11.5px;color:#8a8a8f;margin-top:4px">五年级（1）班 · 青石镇中心小学</div>
+            <div style="display:flex;gap:6px;margin-top:8px"><span class="hb" style="font-size:9.5px"><span class="iconify" data-icon="ph:medal"></span> 种子徽章 ×6</span><span class="hb" style="font-size:9.5px"><span class="iconify" data-icon="ph:fire"></span> 12 天</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="pt">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:-30px;position:relative;z-index:2">
+          <div class="card" style="padding:14px;text-align:center"><div style="font-family:var(--num);font-style:italic;font-weight:900;font-size:21px;color:var(--orange)">1,286</div><div style="font-size:10px;color:var(--faint);margin-top:4px">学习积分</div></div>
+          <div class="card" style="padding:14px;text-align:center"><div style="font-family:var(--num);font-style:italic;font-weight:900;font-size:21px;color:var(--green)">78</div><div style="font-size:10px;color:var(--faint);margin-top:4px">本周答题</div></div>
+          <div class="card" style="padding:14px;text-align:center"><div style="font-family:var(--num);font-style:italic;font-weight:900;font-size:21px;color:var(--sky)">Lv.4</div><div style="font-size:10px;color:var(--faint);margin-top:4px">成长等级</div></div>
+        </div>
+        <div class="section-title" style="margin-top:22px"><span class="iconify" data-icon="ph:medal"></span>我的徽章</div>
+        <div class="card card-pad">
+          <div class="badge-grid">
+            <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:fire"></span></div><div class="b-name got">打卡 7 天</div></div>
+            <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:book-open"></span></div><div class="b-name got">读书 3 本</div></div>
+            <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:calculator"></span></div><div class="b-name got">方程小能手</div></div>
+            <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:megaphone"></span></div><div class="b-name got">朗读之星</div></div>
+            <div class="badge"><div class="b-ico lock"><span class="iconify" data-icon="ph:plant"></span></div><div class="b-name">种下 10 棵</div></div>
+            <div class="badge"><div class="b-ico lock"><span class="iconify" data-icon="ph:lightning"></span></div><div class="b-name">连击 30 天</div></div>
+            <div class="badge"><div class="b-ico lock"><span class="iconify" data-icon="ph:rocket"></span></div><div class="b-name">编程通关</div></div>
+            <div class="badge"><div class="b-ico lock"><span class="iconify" data-icon="ph:trophy"></span></div><div class="b-name">满分挑战</div></div>
+          </div>
+        </div>
+        <div class="section-title"><span class="iconify" data-icon="ph:gear-six"></span>设置与帮助</div>
+        <div class="card" style="margin-bottom:4px">
+          <div class="row-card" onclick="toast('已打开家长陪伴设置')"><div class="ric ric-ink"><span class="iconify" data-icon="ph:heart"></span></div><div style="flex:1"><div class="r-title">家长陪伴</div><div class="r-sub">语音留言 · 与爸妈远程联系</div></div><span class="r-arrow iconify" data-icon="ph:caret-right"></span></div>
+          <div class="row-card" onclick="toast('已打开无障碍模式')"><div class="ric ric-ink"><span class="iconify" data-icon="ph:eye"></span></div><div style="flex:1"><div class="r-title">护眼模式 / 夜间模式</div><div class="r-sub">保护视力 · 家长可设置时长限制</div></div><span class="r-arrow iconify" data-icon="ph:caret-right"></span></div>
+          <div class="row-card" onclick="toast('已连接求助渠道')"><div class="ric ric-rose"><span class="iconify" data-icon="ph:lifebuoy"></span></div><div style="flex:1"><div class="r-title">心理求助渠道</div><div class="r-sub">12355 青少年服务台 · 学校心理老师</div></div><span class="r-arrow iconify" data-icon="ph:caret-right"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 兴趣探索向导 ============ -->
+  <div class="view" id="view-find">
+    <div class="navhead">
+      <span class="iconify back" data-icon="ph:arrow-left" onclick="go('view-interest')"></span>
+      <h2>兴趣探索</h2>
+      <span style="flex:1"></span>
+    </div>
+    <div class="pt">
+      <div class="fz-steps"><i class="on"></i><i></i><i></i></div>
+      <div class="fz-tip" id="fzTip">第 1 步 · 选出你喜欢的，可以多选</div>
+      <div id="fzBox"></div>
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn btn-ghost" id="fzPrev" style="visibility:hidden;width:110px" onclick="fzPrev()">上一步</button>
+        <button class="btn btn-primary" id="fzNext" onclick="fzNext()">下一步</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 底部 Tab ===== -->
+  <div class="tabbar">
+    <div class="tab-item on" data-tab="learn"><span class="iconify" data-icon="ph:house"></span>学习</div>
+    <div class="tab-item" data-tab="interest"><span class="iconify" data-icon="ph:palette"></span>兴趣</div>
+    <div class="tab-item" data-tab="tutor"><span class="iconify" data-icon="ph:chats-circle"></span>辅导</div>
+    <div class="tab-item" data-tab="diag"><span class="iconify" data-icon="ph:chart-donut"></span>诊断</div>
+    <div class="tab-item" data-tab="me"><span class="iconify" data-icon="ph:user"></span>我的</div>
+  </div>
+</div>
+
+<!-- 徽章抽屉 -->
+<div class="sheet-mask" id="sheetMask" onclick="closeSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="font-size:15px;font-weight:900;margin-bottom:14px">我的徽章墙 <span style="font-size:11px;color:var(--faint);font-weight:500">打卡成长记录</span></div>
+    <div class="badge-grid">
+      <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:fire"></span></div><div class="b-name got">打卡 7 天</div></div>
+      <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:moon"></span></div><div class="b-name got">夜读 5 天</div></div>
+      <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:calculator"></span></div><div class="b-name got">方程小能手</div></div>
+      <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:megaphone"></span></div><div class="b-name got">朗读之星</div></div>
+      <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:book-open"></span></div><div class="b-name got">阅读 3 本</div></div>
+      <div class="badge"><div class="b-ico got"><span class="iconify" data-icon="ph:trend-up"></span></div><div class="b-name got">进步 +20</div></div>
+      <div class="badge"><div class="b-ico lock"><span class="iconify" data-icon="ph:plant"></span></div><div class="b-name">种下 10 棵</div></div>
+      <div class="badge"><div class="b-ico lock"><span class="iconify" data-icon="ph:lightning"></span></div><div class="b-name">连击 30 天</div></div>
+    </div>
+    <div style="background:#f7f7f7;border-radius:12px;padding:12px 14px;margin-top:10px;font-size:11px;color:var(--faint);line-height:1.7"><span class="iconify" data-icon="ph:database" style="vertical-align:-2px"></span> 打卡数据自动沉淀为成长记录（D6）· 已脱敏同步给家长端周报</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script type="module" src="/assets/app/student-main.js"></script>
+</body>
+</html>

@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>乡芽 · 教师端 — 乡镇教育智能体原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="/vendor/echarts.min.js"></script>
+<script src="/vendor/echarts-loader.js"></script>
+<style>
+:root{
+  --bg:#f4f5f8; --card:#fff; --sidebar:#ffffff; --sidebar2:#f5f6f9;
+  --primary:#4F46E5; --primary-deep:#4338CA; --primary-soft:rgba(79,70,229,.09);
+  --green:#10B981; --green-soft:rgba(16,185,129,.1);
+  --amber:#F59E0B; --amber-soft:rgba(245,158,11,.12);
+  --rose:#F43F5E; --rose-soft:rgba(244,63,94,.1);
+  --sky:#0EA5E9; --sky-soft:rgba(14,165,233,.1);
+  --violet:#8B5CF6; --violet-soft:rgba(139,92,246,.1);
+  --text:#191b22; --muted:#6b7280; --faint:#9aa1ad;
+  --border:#e7e9ef; --radius:14px;
+  --font:'Noto Sans SC',sans-serif; --font-num:'Outfit','Noto Sans SC',sans-serif;
+  --shadow-sm:0 1px 2px rgba(20,24,40,.05);
+  --shadow-md:0 10px 25px -5px rgba(20,24,40,.07),0 8px 10px -6px rgba(20,24,40,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#d4d7e0;border-radius:10px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ 布局 ============ */
+.app{display:flex;min-height:100vh}
+
+/* ---- 侧边栏 ---- */
+.sidebar{width:264px;background:var(--sidebar);color:#5b6270;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;z-index:50;border-right:1px solid var(--border)}
+.side-logo{display:flex;align-items:center;gap:11px;padding:22px 22px 18px;border-bottom:1px solid var(--border)}
+.logo-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#4F46E5,#7C3AED);display:grid;place-items:center;box-shadow:0 6px 16px rgba(79,70,229,.32);flex:none}
+.logo-mark .iconify{font-size:20px;color:#fff}
+.logo-name{font-size:16px;font-weight:900;color:#191b22;letter-spacing:.5px}
+.logo-sub{font-size:10px;color:#9aa1ad;margin-top:1px;letter-spacing:1px}
+.side-nav{flex:1;overflow-y:auto;padding:14px 12px 8px}
+.nav-group{font-size:10px;letter-spacing:1.5px;color:#9aa1ad;font-weight:700;padding:16px 12px 7px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:#5b6270;cursor:pointer;transition:all .2s;font-size:13.5px;font-weight:500;user-select:none}
+.nav-item .iconify{font-size:17px;opacity:.75}
+.nav-item:hover{background:#f4f5f8;color:#191b22}
+.nav-item.active{background:var(--primary-soft);color:var(--primary-deep);font-weight:700}
+.nav-item.active .iconify{color:var(--primary);opacity:1}
+.nav-item .badge{margin-left:auto;font-size:10px;font-weight:700;background:var(--rose-soft);color:var(--rose);border:1px solid rgba(244,63,94,.25);border-radius:20px;padding:2px 7px}
+.side-foot{padding:14px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:11px;background:var(--sidebar2);border:1px solid var(--border);border-radius:12px;padding:11px}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#F97316);display:grid;place-items:center;color:#fff;font-weight:900;font-size:13px;flex:none}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:700;color:#191b22}
+.user-role{font-size:10.5px;color:#8b90a0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---- 主区 ---- */
+.main{flex:1;margin-left:264px;min-width:0}
+.topbar{position:sticky;top:0;z-index:40;height:64px;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 28px}
+.crumb{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.crumb b{color:var(--text)}
+.tb-search{flex:1;max-width:380px;display:flex;align-items:center;gap:9px;background:#f1f2f6;border:1px solid transparent;border-radius:10px;padding:8px 14px;transition:all .2s;cursor:pointer}
+.tb-search:hover,.tb-search:focus-within{border-color:#c7cbe8;background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,.08)}
+.tb-search .iconify{color:var(--faint);font-size:16px}
+.tb-search span{color:var(--faint);font-size:13px}
+.tb-search kbd{margin-left:auto;font-family:var(--font-num);font-size:10px;background:#fff;border:1px solid var(--border);border-radius:5px;padding:1px 6px;color:var(--muted)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.role-switch{display:flex;background:#f1f2f6;border-radius:10px;padding:3px;gap:2px}
+.role-switch a{font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:8px;transition:all .2s}
+.role-switch a.on{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm);font-weight:700}
+.role-switch a:hover{color:var(--primary)}
+.tb-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#f1f2f6;cursor:pointer;position:relative;transition:all .2s}
+.tb-icon:hover{background:#e8e9f5}
+.tb-icon .iconify{font-size:17px;color:#4b5162}
+.tb-icon .dot{position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--rose);border:2px solid #fff}
+.demo-chip{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#7C3AED;background:rgba(124,58,237,.1);border:1px dashed rgba(124,58,237,.35);border-radius:20px;padding:5px 12px;letter-spacing:.5px}
+.demo-chip .pulse{width:6px;height:6px;border-radius:50%;background:#7C3AED;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+.content{padding:26px 28px 60px;max-width:1500px}
+
+/* ---- 页面切换 ---- */
+.page{display:none}
+.page.on{display:block;animation:slideUp .38s ease-out}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ---- 页头 ---- */
+.page-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:900;letter-spacing:.3px}
+.page-head .desc{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.6}
+.src-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-soft);border:1px solid rgba(79,70,229,.18);border-radius:20px;padding:5px 12px;margin-top:8px;white-space:nowrap}
+.src-tag .iconify{font-size:13px}
+.src-tag b{color:var(--primary-deep)}
+.head-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+
+/* ---- 通用组件 ---- */
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:700;border-radius:10px;padding:10px 18px;transition:all .22s;text-decoration:none}
+.btn .iconify{font-size:16px}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(79,70,229,.28)}
+.btn-primary:hover{background:var(--primary-deep);transform:translateY(-1px);box-shadow:0 8px 20px rgba(79,70,229,.35)}
+.btn-ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:#c7cbe8;background:#fafbff}
+.btn-dark{background:var(--text);color:#fff}
+.btn-dark:hover{background:#000}
+.btn-green{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(16,185,129,.3)}
+.btn-green:hover{background:#059669}
+.btn-sm{padding:7px 13px;font-size:12.5px;border-radius:9px}
+/* 引导式向导浮层 */
+.wiz-mask{position:fixed;inset:0;background:rgba(15,23,42,.45);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:300}
+.wiz-mask.on{display:flex}
+.wiz{width:560px;max-width:94vw;max-height:90vh;overflow:auto;background:#fff;border-radius:22px;box-shadow:0 30px 70px rgba(15,23,42,.3);animation:wizIn .38s cubic-bezier(.2,.85,.3,1.08)}
+@keyframes wizIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+.wiz-head{display:flex;align-items:center;gap:13px;padding:20px 24px 0}
+.wiz-ico{width:42px;height:42px;border-radius:13px;background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;font-size:21px}
+.wiz-title{font-size:16.5px;font-weight:800;color:#0f172a}
+.wiz-sub{font-size:11.5px;color:var(--faint);margin-top:2px}
+.wiz-x{margin-left:auto;width:30px;height:30px;border-radius:50%;background:#f1f2f6;display:grid;place-items:center;color:#64748b;cursor:pointer;font-size:15px;transition:all .2s}
+.wiz-x:hover{background:#e2e6ee;color:#0f172a}
+.wiz-steps{display:flex;gap:6px;margin:16px 24px 0}
+.wiz-steps i{height:4px;border-radius:4px;background:#e2e6ee;flex:1;transition:all .3s}
+.wiz-steps i.on{background:linear-gradient(90deg,var(--primary),#818CF8)}
+.wiz-body{padding:18px 24px 4px}
+.wiz-step{display:none}
+.wiz-step.on{display:block;animation:stepIn .3s ease}
+@keyframes stepIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.wiz-tip{font-size:12px;color:var(--faint);margin-bottom:14px}
+.wiz-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px 22px}
+.wiz-q{font-size:14px;font-weight:800;color:#0f172a;margin-bottom:10px}
+.self-items{display:flex;flex-direction:column;gap:9px;max-height:46vh;overflow:auto;padding-right:4px}
+.self-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s}
+.self-item:hover{border-color:#c7cbe3;background:#fafafd}
+.self-item.sel{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.self-item .si-ico{width:30px;height:30px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:15px;color:var(--primary);flex:none;box-shadow:0 2px 6px rgba(15,23,42,.06)}
+.self-item .si-name{flex:1;font-size:13px;font-weight:700;color:#0f172a}
+.self-item .si-desc{font-size:11px;color:var(--faint);margin-top:1px}
+.si-opts{display:flex;gap:6px}
+.si-opt{font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:#fff;color:#64748b;cursor:pointer;transition:all .2s}
+.si-opt.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.si-opt.opt-warn.on{background:var(--rose);border-color:var(--rose)}
+.opt-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.opt-card{border:1.5px solid var(--border);border-radius:13px;padding:13px 10px;text-align:center;cursor:pointer;transition:all .2s}
+.opt-card:hover{border-color:#c7cbe3;background:#fafafd}
+.opt-card.sel{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.opt-card .oc-ico{font-size:22px;color:var(--primary);margin-bottom:6px}
+.opt-card .oc-t{font-size:12.5px;font-weight:800;color:#0f172a}
+.opt-card .oc-d{font-size:10.5px;color:var(--faint);margin-top:2px}
+.wiz-gen{text-align:center;padding:34px 0 24px}
+.wiz-gen-ico{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:linear-gradient(135deg,var(--primary-soft),#EEF2FF);display:grid;place-items:center;color:var(--primary);font-size:30px;animation:genPulse 1.2s ease infinite}
+@keyframes genPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.wiz-gen-t{font-size:13.5px;font-weight:700;color:#0f172a}
+.wiz-gen-s{font-size:11.5px;color:var(--faint);margin-top:5px}
+.wiz-gen-bar{width:260px;height:7px;border-radius:7px;background:#eef0f5;margin:16px auto 0;overflow:hidden}
+.wiz-gen-bar i{display:block;height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,var(--primary),#818CF8);transition:width .15s linear}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);transition:box-shadow .25s,transform .25s,border-color .25s}
+.card-hover:hover{border-color:#d5d8ef;box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.card-pad{padding:20px}
+.card-head{display:flex;align-items:center;gap:10px;padding:17px 20px;border-bottom:1px solid #f1f2f6}
+.card-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:9px}
+.mini-cht-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#0f172a;padding:6px 0 0}
+.mini-cht-title i{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#A5B4FC);box-shadow:0 0 0 3px rgba(99,102,241,.16)}
+.card-title::before{content:'';width:4px;height:16px;border-radius:4px;background:linear-gradient(180deg,var(--primary),#818CF8)}
+.card-title .sub{font-size:11.5px;font-weight:500;color:var(--faint)}
+.card-extra{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;border-radius:20px;padding:3.5px 10px}
+.chip-green{background:var(--green-soft);color:#047857}
+.chip-amber{background:var(--amber-soft);color:#b45309}
+.chip-rose{background:var(--rose-soft);color:#be123c}
+.chip-blue{background:var(--sky-soft);color:#0369a1}
+.chip-violet{background:var(--violet-soft);color:#6d28d9}
+.chip-gray{background:#f1f2f6;color:var(--muted)}
+
+.grid{display:grid;gap:18px}
+.grid.g-13>div,.grid.g-31>div{display:flex;flex-direction:column}
+.grid.g-13>div>.card,.grid.g-31>div>.card{flex:1;min-width:0}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:1fr 1fr}
+.g-13{grid-template-columns:1fr 1.6fr}
+.g-31{grid-template-columns:1.6fr 1fr}
+@media(max-width:1280px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}.g2,.g-13,.g-31{grid-template-columns:1fr}}
+
+.kpi{display:flex;flex-direction:column;gap:12px;padding:18px 20px}
+.kpi-top{display:flex;align-items:center;justify-content:space-between}
+.kpi-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:19px}
+.kpi-ico-blue{background:var(--primary-soft);color:var(--primary)}
+.kpi-ico-green{background:var(--green-soft);color:var(--green)}
+.kpi-ico-amber{background:var(--amber-soft);color:var(--amber)}
+.kpi-ico-rose{background:var(--rose-soft);color:var(--rose)}
+.kpi-label{font-size:12.5px;color:var(--muted);font-weight:500}
+.kpi-num{font-family:var(--font-num);font-size:27px;font-weight:900;letter-spacing:-.5px;line-height:1}
+.kpi-num small{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px}
+.kpi-foot{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--faint)}
+.kpi-foot .up{color:var(--green);font-weight:700}
+.kpi-foot .down{color:var(--rose);font-weight:700}
+.mini-bar{height:5px;border-radius:4px;background:#f1f2f6;overflow:hidden}
+.mini-bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--primary),#818CF8)}
+
+/* 表格 */
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--faint);text-transform:uppercase;text-align:left;padding:11px 16px;border-bottom:1px solid var(--border);background:#fafbfc}
+.table td{padding:13px 16px;border-bottom:1px solid #f1f2f6;font-size:13px;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tbody tr{transition:background .18s}
+.table tbody tr:hover{background:#f8f8ff}
+.t-cell-main{font-weight:600}
+.t-cell-sub{font-size:11.5px;color:var(--faint);margin-top:2px}
+.mono{font-family:var(--font-num);font-weight:700}
+
+/* 进度条行 */
+.prow{display:flex;align-items:center;gap:12px;padding:10px 0}
+.prow+.prow{border-top:1px solid #f4f5f8}
+.prow .pname{width:118px;flex:none;font-size:12.5px;font-weight:600}
+.prow .ptrack{flex:1;height:8px;background:#f0f1f5;border-radius:6px;overflow:hidden}
+.prow .ptrack i{display:block;height:100%;border-radius:6px;transition:width 1s ease}
+.prow .pval{font-family:var(--font-num);font-size:12.5px;font-weight:700;width:38px;text-align:right}
+.prow .plevel{width:52px;font-size:10.5px;font-weight:700;text-align:center;border-radius:20px;padding:2px 0}
+
+/* 表单 */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:#4b5162;margin-bottom:7px}
+.field label .req{color:var(--rose)}
+.input,.select,textarea.input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-family:var(--font);font-size:13.5px;background:#fff;outline:none;transition:all .2s;color:var(--text)}
+.input:focus,.select:focus,textarea.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+textarea.input{resize:vertical;min-height:90px;line-height:1.7}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:900px){.f-row,.f-row3{grid-template-columns:1fr}}
+.switch{position:relative;width:40px;height:22px;background:#e3e5ec;border-radius:20px;cursor:pointer;transition:.25s;flex:none}
+.switch.on{background:var(--primary)}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on::after{left:21px}
+.radio-pill{display:flex;background:#f1f2f6;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.radio-pill span{flex:1;text-align:center;font-size:12.5px;font-weight:600;color:var(--muted);padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.radio-pill span.on{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm);font-weight:700}
+
+/* 列表行 */
+.list-row{display:flex;align-items:center;gap:13px;padding:12px 16px;cursor:pointer;transition:background .18s}
+.list-row:hover{background:#f8f8ff}
+.list-row+.list-row{border-top:1px solid #f4f5f8}
+.row-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:none}
+
+/* 头像堆叠 */
+.avatar-stack{display:flex}
+.avatar-stack .a{width:26px;height:26px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff;margin-left:-8px;box-sizing:content-box}
+.avatar-stack .a:first-child{margin-left:0}
+.avatar-stack .more{background:#e9eaf1;color:var(--muted)}
+
+/* 时间线 */
+.timeline{position:relative;padding-left:26px}
+.timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:#e9eaf1;border-radius:2px}
+.tl-item{position:relative;padding:0 0 20px 14px}
+.tl-item:last-child{padding-bottom:4px}
+.tl-item::before{content:'';position:absolute;left:-26px;top:3px;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--tlc,#c7cbe8);background:var(--tlb,#fff)}
+.tl-item.b-blue{--tlc:var(--primary);--tlb:#EEF0FF}
+.tl-item.b-green{--tlc:var(--green);--tlb:#E7F9F2}
+.tl-item.b-amber{--tlc:var(--amber);--tlb:#FEF3DC}
+.tl-item.b-rose{--tlc:var(--rose);--tlb:#FDE8EC}
+.tl-item.b-gray{--tlc:#cbd0dc;--tlb:#f1f2f6}
+.tl-title{font-size:13px;font-weight:700}
+.tl-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.65}
+.tl-time{font-size:10.5px;color:var(--faint);margin-top:4px;font-family:var(--font-num)}
+
+/* 分段切换 */
+.tabs{display:flex;background:#f1f2f6;border-radius:11px;padding:4px;gap:3px}
+.tabs button{border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:600;color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s}
+.tabs button.on{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm);font-weight:700}
+
+/* 标签 */
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+.tag-lvA{background:#EEF0FF;color:var(--primary)}
+.tag-lvB{background:var(--green-soft);color:#047857}
+.tag-lvC{background:var(--amber-soft);color:#b45309}
+.tag-doc{background:var(--violet-soft);color:#6d28d9}
+.tag-video{background:var(--sky-soft);color:#0369a1}
+.tag-ppt{background:#FEF3DC;color:#b45309}
+.tag-xls{background:var(--green-soft);color:#047857}
+
+/* 引用出处 */
+.cite{display:flex;align-items:center;gap:8px;background:#f7f7ff;border:1px solid #e5e6f8;border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted)}
+.cite .iconify{color:var(--primary);font-size:15px}
+.cite b{color:var(--primary-deep);font-weight:700}
+
+/* 上传区 */
+.upload-zone{border:2px dashed #d5d8ef;border-radius:14px;padding:44px 20px;text-align:center;background:#fafbff;transition:all .25s;cursor:pointer}
+.upload-zone:hover{border-color:var(--primary);background:#f4f5ff}
+.upload-zone .iconify{font-size:34px;color:var(--primary);opacity:.85}
+.upload-zone p{font-size:13.5px;font-weight:600;color:#4b5162;margin-top:10px}
+.upload-zone span{font-size:12px;color:var(--faint)}
+
+/* 资源卡 */
+.res-card{border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--border);transition:all .22s;cursor:pointer}
+.tp-tpl{padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .18s;background:#fff}
+.tp-tpl:hover{border-color:#c7cbe8;background:#fafbff;transform:translateX(2px)}
+.res-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:#d5d8ef}
+.res-cover{height:96px;display:grid;place-items:center;font-size:30px;position:relative}
+.res-cover .type{position:absolute;top:10px;left:10px}
+.res-body{padding:12px 14px}
+.res-title{font-size:13px;font-weight:700;line-height:1.45}
+.res-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--faint);margin-top:7px}
+
+/* 抽屉模态 */
+.modal-mask{position:fixed;inset:0;background:rgba(15,17,26,.45);backdrop-filter:blur(3px);z-index:100;display:none;place-items:center;padding:24px}
+.modal-mask.on{display:grid;animation:fadeIn .2s}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:520px;box-shadow:0 24px 70px rgba(0,0,0,.25);animation:popIn .28s cubic-bezier(.2,.9,.3,1.2)}
+.modal-head{display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid #f1f2f6}
+.modal-head h3{font-size:15.5px;font-weight:800}
+.modal-head .close{margin-left:auto;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:#f1f2f6;cursor:pointer;border:none;color:#4b5162;transition:all .2s}
+.modal-head .close:hover{background:#fde8ec;color:var(--rose)}
+.modal-body{padding:20px 22px}
+.modal-foot{padding:14px 22px;border-top:1px solid #f1f2f6;display:flex;justify-content:flex-end;gap:10px}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes popIn{from{opacity:0;transform:scale(.92) translateY(10px)}}
+
+/* toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:#191b22;color:#fff;font-size:13px;font-weight:600;padding:11px 20px;border-radius:12px;display:flex;align-items:center;gap:9px;z-index:200;opacity:0;transition:all .35s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 14px 40px rgba(0,0,0,.3)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .iconify{color:#34D399;font-size:17px}
+
+/* 打字效果 */
+.typing-dots{display:inline-flex;gap:4px;align-items:center}
+.typing-dots i{width:5px;height:5px;border-radius:50%;background:var(--primary);opacity:.4;animation:tdot 1.2s infinite}
+.typing-dots i:nth-child(2){animation-delay:.15s}
+.typing-dots i:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,100%{opacity:.25;transform:none}50%{opacity:1;transform:translateY(-2px)}}
+
+/* 生成过程 */
+.gen-steps{display:flex;gap:10px;margin-bottom:16px}
+.gen-step{flex:1;text-align:center;font-size:11.5px;color:var(--faint);font-weight:600;position:relative;padding-top:26px}
+.gen-step::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:#e9eaf1;transition:all .4s}
+.gen-step::after{content:'';position:absolute;top:14.5px;left:calc(50% + 15px);width:calc(100% - 30px);height:2px;background:#e9eaf1}
+.gen-step:last-child::after{display:none}
+.gen-step.done{color:var(--green)}
+.gen-step.done::before{background:var(--green);box-shadow:0 0 0 4px var(--green-soft)}
+.gen-step.doing{color:var(--primary)}
+.gen-step.doing::before{background:var(--primary);box-shadow:0 0 0 4px var(--primary-soft);animation:gstep 1.4s infinite}
+@keyframes gstep{0%,100%{box-shadow:0 0 0 4px var(--primary-soft)}50%{box-shadow:0 0 0 8px rgba(79,70,229,.15)}}
+
+/* 结果卡片入场 */
+.result-card{animation:resultIn .5s cubic-bezier(.2,.8,.3,1)}
+@keyframes resultIn{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.result-card .card-head{display:flex;align-items:center;gap:10px;padding:15px 20px;border-bottom:1px solid #f1f2f6}
+
+/* 骨架 */
+.skeleton{background:linear-gradient(90deg,#f0f1f5 25%,#f8f9fc 50%,#f0f1f5 75%);background-size:200% 100%;animation:skel 1.4s infinite;border-radius:8px}
+@keyframes skel{to{background-position:-200% 0}}
+
+/* 聊天 */
+.chat-box{display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:11px;max-width:88%}
+.msg .bubble{padding:11px 15px;border-radius:13px;font-size:13.5px;line-height:1.75}
+.msg.ai{align-self:flex-start}
+.msg.ai .bubble{background:#f1f2f6;border-top-left-radius:4px}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.msg.me .bubble{background:var(--primary);color:#fff;border-top-right-radius:4px}
+.msg .mini-avatar{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:15px}
+.msg .bubble .src-line{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--faint);margin-top:8px}
+.msg.me .bubble .src-line{color:rgba(255,255,255,.75)}
+
+/* 分层作业卡 */
+.plan-card{border-radius:12px;padding:16px;border:1.5px solid;position:relative}
+.plan-card .pl-flag{position:absolute;top:-10px;left:14px;font-size:10.5px;font-weight:800;border-radius:8px;padding:3px 10px;color:#fff}
+</style>
+<script defer src="/assets/legacy/teacher.legacy.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ================= 侧边栏 ================= -->
+<aside class="sidebar">
+  <div class="side-logo">
+    <div class="logo-mark"><span class="iconify" data-icon="ph:plant-fill"></span></div>
+    <div>
+      <div class="logo-name">乡芽 · 教师端</div>
+      <div class="logo-sub">TEACHER CONSOLE</div>
+    </div>
+  </div>
+  <nav class="side-nav">
+    <div class="nav-group">工作台</div>
+    <div class="nav-item active" data-page="dashboard"><span class="iconify" data-icon="ph:chart-line-up"></span>班级学情看板 <span class="badge">T4</span></div>
+
+    <div class="nav-group" style="display:flex;align-items:center;gap:6px"><span class="iconify" data-icon="ph:robot" style="font-size:12px;color:#7C3AED"></span>智能体工作台</div>
+    <div class="nav-item" data-page="lesson"><span class="iconify" data-icon="ph:note-pencil"></span>一键备课</div>
+    <div class="nav-item" data-page="paper"><span class="iconify" data-icon="ph:file-text"></span>一键组卷 / 分层作业</div>
+    <div class="nav-item" data-page="micro"><span class="iconify" data-icon="ph:video-camera"></span>微课脚本</div>
+    <div class="nav-item" data-page="researcher"><span class="iconify" data-icon="ph:sparkle"></span>AI 教研员</div>
+    <div class="nav-item" data-page="skills"><span class="iconify" data-icon="ph:medal"></span>基本功补强</div>
+
+    <div class="nav-group">资源与材料</div>
+    <div class="nav-item" data-page="library"><span class="iconify" data-icon="ph:books"></span>教学资源库</div>
+    <div class="nav-item" data-page="ocr"><span class="iconify" data-icon="ph:camera"></span>拍照转教案</div>
+    <div class="nav-item" data-page="parentmeet"><span class="iconify" data-icon="ph:megaphone"></span>家长会材料包</div>
+    <div class="nav-item" data-page="backtoschool"><span class="iconify" data-icon="ph:backpack"></span>开学材料包</div>
+    <div class="nav-item" data-page="leftbehind"><span class="iconify" data-icon="ph:hand-heart"></span>留守儿童沟通</div>
+    <div class="nav-item" data-page="title"><span class="iconify" data-icon="ph:folder-open"></span>职称材料整理</div>
+
+    <div class="nav-group">协作教研</div>
+    <div class="nav-item" data-page="collab"><span class="iconify" data-icon="ph:users-three"></span>集体备课</div>
+  </nav>
+  <div class="side-foot">
+    <div class="user-card">
+      <div class="avatar">王</div>
+      <div class="user-info">
+        <div class="user-name">王秀兰 老师</div>
+        <div class="user-role">五年级 数学·科学 ｜ 青石镇中心小学</div>
+      </div>
+      <span class="iconify" data-icon="ph:dots-three-outline" style="color:#8b90a0;cursor:pointer;font-size:16px"></span>
+    </div>
+  </div>
+</aside>
+
+<!-- ================= 主区 ================= -->
+<main class="main">
+  <header class="topbar">
+    <div class="crumb"><span class="iconify" data-icon="ph:house"></span> 工作台 / <b id="crumbNow">班级学情看板</b></div>
+    <div class="tb-search"><span class="iconify" data-icon="ph:magnifying-glass"></span><span>搜索备课、资源、题目…</span><kbd>Ctrl K</kbd></div>
+    <div class="tb-right">
+      <div class="demo-chip"><span class="pulse"></span>DEMO 原型演示</div>
+      <div class="role-switch">
+        <a href="[object Object].html" class="on">教师</a>
+        <a href="[object Object].html">学生</a>
+        <a href="[object Object].html">家长</a>
+        <a href="[object Object].html">管理</a>
+      </div>
+      <div class="tb-icon"><span class="iconify" data-icon="ph:bell"></span><span class="dot"></span></div>
+      <div class="tb-icon"><span class="iconify" data-icon="ph:question"></span></div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ================ T4 班级学情看板 ================ -->
+    <section class="page on" id="page-dashboard">
+      <div class="page-head">
+        <div>
+          <h1>班级学情一眼看板</h1>
+          <p class="desc">五年级（1）班 · 数学 — 全部学情均由学生作答数据回流计算，不凭空出现</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D6 学生作答 → S3 认知诊断回流</span>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost btn-sm"><span class="iconify" data-icon="ph:download-simple"></span>导出周报</button>
+          <button class="btn btn-primary btn-sm" onclick="toast('已生成班级诊断快照')"><span class="iconify" data-icon="ph:magic-wand"></span>AI 生成班级诊断</button>
+        </div>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:18px">
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-blue"><span class="iconify" data-icon="ph:users"></span></div><span class="chip chip-blue">本周活跃 98%</span></div>
+          <div><div class="kpi-num">42<small>人</small></div><div class="kpi-label">班级人数</div></div>
+          <div class="mini-bar"><i style="width:92%"></i></div>
+        </div>
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-green"><span class="iconify" data-icon="ph:pencil-simple-line"></span></div><span class="chip chip-green"><span class="iconify" data-icon="ph:trend-up"></span> +18%</span></div>
+          <div><div class="kpi-num">1,286<small>次</small></div><div class="kpi-label">本周作答次数</div></div>
+          <div class="mini-bar"><i style="width:76%;background:linear-gradient(90deg,var(--green),#34D399)"></i></div>
+        </div>
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-amber"><span class="iconify" data-icon="ph:target"></span></div><span class="chip chip-amber">上周 74%</span></div>
+          <div><div class="kpi-num">78.6<small>%</small></div><div class="kpi-label">班级平均掌握度</div></div>
+          <div class="mini-bar"><i style="width:78.6%;background:linear-gradient(90deg,var(--amber),#FBBF24)"></i></div>
+        </div>
+        <div class="card card-hover kpi">
+          <div class="kpi-top"><div class="kpi-icon kpi-ico-rose"><span class="iconify" data-icon="ph:stack-simple"></span></div><span class="chip chip-rose">需关注</span></div>
+          <div><div class="kpi-num">6<small>份</small></div><div class="kpi-label">待批改作业</div></div>
+          <div class="mini-bar"><i style="width:30%;background:linear-gradient(90deg,var(--rose),#FB7185)"></i></div>
+        </div>
+      </div>
+
+      <div class="grid g-31" style="margin-bottom:18px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">班级掌握度构成 <span class="sub">按知识点聚合</span></div>
+            <div class="card-extra"><div class="radio-pill" style="width:190px"><span class="on">本周</span><span onclick="toast('已切换为上周')">上周</span></div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:6px;padding:10px 20px 12px">
+            <div style="height:252px" id="ringMastery"></div>
+            <div>
+              <div class="mini-cht-title"><i></i>近 7 日学习活跃度</div>
+              <div style="height:230px" id="activeMini"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">知识点掌握度排行 <span class="sub">掌握度 = 正确作答 / 总作答</span></div>
+            <div class="card-extra"><span class="src-tag" style="margin:0"><span class="iconify" data-icon="ph:arrows-clockwise"></span>作答回流</span></div></div>
+          <div style="padding:10px 20px 16px">
+            <div class="prow"><div class="pname">小数乘除法</div><div class="ptrack"><i style="width:92%;background:linear-gradient(90deg,var(--green),#34D399)"></i></div><div class="pval">92%</div><div class="plevel" style="background:var(--green-soft);color:#047857">扎实</div></div>
+            <div class="prow"><div class="pname">分数加减法</div><div class="ptrack"><i style="width:86%;background:linear-gradient(90deg,var(--green),#34D399)"></i></div><div class="pval">86%</div><div class="plevel" style="background:var(--green-soft);color:#047857">扎实</div></div>
+            <div class="prow"><div class="pname">简易方程</div><div class="ptrack"><i style="width:71%;background:linear-gradient(90deg,var(--primary),#818CF8)"></i></div><div class="pval">71%</div><div class="plevel" style="background:var(--primary-soft);color:var(--primary-deep)">巩固中</div></div>
+            <div class="prow"><div class="pname">多边形面积</div><div class="ptrack"><i style="width:64%;background:linear-gradient(90deg,var(--amber),#FBBF24)"></i></div><div class="pval">64%</div><div class="plevel" style="background:var(--amber-soft);color:#b45309">薄弱</div></div>
+            <div class="prow"><div class="pname">统计与可能性</div><div class="ptrack"><i style="width:58%;background:linear-gradient(90deg,var(--rose),#FB7185)"></i></div><div class="pval">58%</div><div class="plevel" style="background:var(--rose-soft);color:#be123c">需补强</div></div>
+            <div class="prow"><div class="pname">数学广角·植树</div><div class="ptrack"><i style="width:53%;background:linear-gradient(90deg,var(--rose),#FB7185)"></i></div><div class="pval">53%</div><div class="plevel" style="background:var(--rose-soft);color:#be123c">需补强</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g-13">
+        <div class="card">
+          <div class="card-head"><div class="card-title">重点关注学生 <span class="sub">风险标签由诊断模型输出</span></div>
+            <div class="card-extra"><button class="btn btn-ghost btn-sm" onclick="toast('已展开全部 42 名学生')">查看全部</button></div></div>
+          <div style="padding:6px 20px 14px">
+            <div class="list-row" onclick="toast('已打开 赵小军 学情档案')">
+              <div class="row-icon" style="background:var(--rose-soft);color:var(--rose)"><span class="iconify" data-icon="ph:warning"></span></div>
+              <div style="flex:1"><div class="t-cell-main">赵小军</div><div class="t-cell-sub">多边形面积 · 连续 5 题失分 | 置信度 91%</div></div>
+              <span class="chip chip-rose">掌握度 38%</span>
+              <span class="iconify" data-icon="ph:caret-right" style="color:var(--faint)"></span>
+            </div>
+            <div class="list-row" onclick="toast('已打开 刘芳 学情档案')">
+              <div class="row-icon" style="background:var(--amber-soft);color:var(--amber)"><span class="iconify" data-icon="ph:trend-down"></span></div>
+              <div style="flex:1"><div class="t-cell-main">刘芳</div><div class="t-cell-sub">本周作答量下降 60% · 疑似情绪低谷（轻提醒已触发）</div></div>
+              <span class="chip chip-amber">活跃度 ↓60%</span>
+              <span class="iconify" data-icon="ph:caret-right" style="color:var(--faint)"></span>
+            </div>
+            <div class="list-row" onclick="toast('已打开 杨伟 学情档案')">
+              <div class="row-icon" style="background:var(--primary-soft);color:var(--primary)"><span class="iconify" data-icon="ph:lightning"></span></div>
+              <div style="flex:1"><div class="t-cell-main">杨伟</div><div class="t-cell-sub">简易方程 · 答题速度快于班级 3.2σ · 疑似未走心作答</div></div>
+              <span class="chip chip-blue">异常模式</span>
+              <span class="iconify" data-icon="ph:caret-right" style="color:var(--faint)"></span>
+            </div>
+            <div class="list-row" onclick="toast('已打开 李春兰 学情档案')">
+              <div class="row-icon" style="background:var(--green-soft);color:var(--green)"><span class="iconify" data-icon="ph:star"></span></div>
+              <div style="flex:1"><div class="t-cell-main">李春兰</div><div class="t-cell-sub">本周进步 21 个百分点 · 计划推送完成率 100%</div></div>
+              <span class="chip chip-green">进步之星</span>
+              <span class="iconify" data-icon="ph:caret-right" style="color:var(--faint)"></span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">近 7 日班级作答趋势</div>
+            <div class="card-extra"><span class="chip chip-gray">上周同比 +18%</span></div></div>
+          <div style="padding:10px 16px 14px;height:236px" id="trendChart"></div>
+          <div class="cite" style="margin:0 20px 18px"><span class="iconify" data-icon="ph:flow-arrow"></span> 学情链路：<b>学生作答</b> → 诊断模型 → 班级聚合视图 → <b>数据可逐层下钻至单题</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T1 一键备课 ================ -->
+    <section class="page" id="page-lesson">
+      <div class="page-head">
+        <div>
+          <h1>一键备课（支持一师多科）</h1>
+          <p class="desc">输入课题，自动生成教案、课件大纲与板书设计，引用教材与课标出处</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D1 教材 / D4 教案模板 / D7 教师输入</span>
+        </div>
+      </div>
+
+      <div class="grid g-13">
+        <div>
+          <div class="card card-pad" style="display:flex;flex-direction:column">
+            <div class="card-head" style="padding:0 0 16px;border-bottom:none"><div class="card-title">备课信息</div></div>
+            <div class="field"><label>任教学科 <span class="req">*</span>（一师多科可多选）</label>
+              <div class="radio-pill" data-field="subject" style="flex-wrap:wrap">
+                <span class="on" data-v="语文"><span class="iconify" data-icon="ph:books" style="vertical-align:-2px"></span> 语文</span>
+                <span data-v="数学"><span class="iconify" data-icon="ph:function" style="vertical-align:-2px"></span> 数学</span>
+                <span data-v="英语"><span class="iconify" data-icon="ph:translate" style="vertical-align:-2px"></span> 英语</span>
+                <span data-v="道德与法治"><span class="iconify" data-icon="ph:scales" style="vertical-align:-2px"></span> 道德与法治</span>
+                <span data-v="科学"><span class="iconify" data-icon="ph:flask" style="vertical-align:-2px"></span> 科学</span>
+                <span data-v="体育"><span class="iconify" data-icon="ph:person-simple-run" style="vertical-align:-2px"></span> 体育</span>
+                <span data-v="音乐"><span class="iconify" data-icon="ph:music-notes" style="vertical-align:-2px"></span> 音乐</span>
+                <span data-v="美术"><span class="iconify" data-icon="ph:paint-brush" style="vertical-align:-2px"></span> 美术</span>
+                <span data-v="信息科技"><span class="iconify" data-icon="ph:desktop" style="vertical-align:-2px"></span> 信息科技</span>
+                <span data-v="劳动"><span class="iconify" data-icon="ph:plant" style="vertical-align:-2px"></span> 劳动</span>
+              </div>
+            </div>
+            <div class="f-row">
+              <div class="field"><label>年级</label><select class="select" data-field="grade">
+                <option>一年级</option><option>二年级</option><option>三年级</option>
+                <option>四年级</option><option selected>五年级</option><option>六年级</option>
+              </select></div>
+              <div class="field"><label>教材版本</label><select class="select" data-field="bookVersion">
+                <option>统编（部编）版</option><option>人教版（2013 审定）</option><option>北师大版</option>
+                <option>苏教版</option><option>西师大版</option><option>冀教版</option><option>青岛版</option>
+                <option>沪教版</option><option>浙教版</option><option>湘教版</option><option>鲁教版</option>
+                <option>教科版</option><option>外研版（英语）</option><option>PEP 版（英语）</option>
+                <option>译林版（英语）</option>
+              </select></div>
+            </div>
+            <div class="field"><label>课题 <span class="req">*</span></label><input class="input" data-field="topic" value="简易方程 · 用字母表示数" placeholder="输入课题名称"></div>
+            <div class="f-row3">
+              <div class="field"><label>课时</label><select class="select" data-field="periodCount"><option>1 课时</option><option>2 课时</option></select></div>
+              <div class="field"><label>时长</label><select class="select" data-field="duration"><option>40 分钟</option><option>45 分钟</option></select></div>
+              <div class="field"><label>学情适配</label><select class="select" data-field="adaptation"><option>默认</option><option>偏薄弱班级</option><option>偏拔高班级</option></select></div>
+            </div>
+            <div class="field"><label>补充说明</label><textarea class="input" data-field="supplementary" placeholder="如：班级里 8 名学生方程概念薄弱，需加强情境导入…"></textarea></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:auto" data-send-agent="lesson"><span class="iconify" data-icon="ph:robot"></span> 发送给智能体</button>
+            <div id="lesson-gen" style="display:none;margin-top:16px">
+              <div class="gen-steps">
+                <div class="gen-step done">匹配课标</div>
+                <div class="gen-step done">检索教材</div>
+                <div class="gen-step doing">生成教案</div>
+                <div class="gen-step">编排课件</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div id="lesson-result" style="display:none">
+            <div class="card result-card" style="margin-bottom:18px">
+              <div class="card-head"><div class="card-title">《用字母表示数》教学设计 <span class="chip chip-green">AI 生成</span></div>
+                <div class="card-extra"><span class="tag tag-lvA">五年级·数学</span></div></div>
+              <div style="padding:16px 20px">
+                <div class="cite" style="margin-bottom:16px"><span class="iconify" data-icon="ph:book-open"></span> 引用出处：人教版五年级上册 P44-46 · 课标 2022 版「数与代数」4.2.1 条</div>
+                <div class="grid g2" style="gap:12px;margin-bottom:16px">
+                  <div style="background:#f7f7ff;border-radius:10px;padding:12px 14px"><div style="font-size:11px;color:var(--faint);font-weight:700;margin-bottom:5px">教学目标</div><div style="font-size:12.5px;line-height:1.7">① 理解字母表示数的含义；② 会用字母表示运算律与公式；③ 渗透符号意识。</div></div>
+                  <div style="background:#FEF9EE;border-radius:10px;padding:12px 14px"><div style="font-size:11px;color:var(--faint);font-weight:700;margin-bottom:5px">教学重难点</div><div style="font-size:12.5px;line-height:1.7">重点：字母表示数的方法。难点：从具体数到字母的抽象（针对班级 8 名薄弱生设计搭桥问题）。</div></div>
+                </div>
+                <div class="timeline">
+                  <div class="tl-item b-blue"><div class="tl-title">情境导入 · 5 min</div><div class="tl-sub">"老师口袋里装了多少颗糖？" → 用字母 x 表示未知数，引发认知冲突</div><div class="tl-time">课件 P1-P3</div></div>
+                  <div class="tl-item b-green"><div class="tl-title">探究新知 · 15 min</div><div class="tl-sub">摆三角形数小棒 → 发现 3n 规律；小组讨论 + 板书演示"数 → 字母"抽象过程</div><div class="tl-time">课件 P4-P7</div></div>
+                  <div class="tl-item b-amber"><div class="tl-title">分层练习 · 12 min</div><div class="tl-sub">A 层基础题 4 道 / B 层变式题 4 道 / C 层拓展题 2 道（已挂接分层作业）</div><div class="tl-time">随堂练习单</div></div>
+                  <div class="tl-item b-gray"><div class="tl-title">总结作业 · 8 min</div><div class="tl-sub">思维导图小结 + 布置《方程超市》情境作业，呼应乡镇生活场景</div><div class="tl-time">作业单 P10</div></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="toast('课件已生成，共 12 页')"><span class="iconify" data-icon="ph:presentation"></span> 生成课件 PPT</button>
+              <button class="btn btn-ghost" onclick="toast('板书设计已生成')"><span class="iconify" data-icon="ph:chalkboard"></span> 生成板书设计</button>
+              <button class="btn btn-ghost" onclick="toast('教案已加入资源库')"><span class="iconify" data-icon="ph:bookmark-simple"></span> 存入资源库</button>
+              <button class="btn btn-dark" onclick="toast('教案已导出为 Word')"><span class="iconify" data-icon="ph:download-simple"></span> 导出</button>
+            </div>
+          </div>
+          <div id="lesson-empty" class="card" style="padding:30px;text-align:center;border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span class="iconify" data-icon="ph:note-pencil-light" style="font-size:44px;color:#c3c7d4"></span>
+            <p style="font-size:14px;color:var(--muted);margin-top:14px;font-weight:600">填写左侧备课信息，生成教案预览</p>
+            <p style="font-size:12px;color:var(--faint);margin-top:6px">原型演示 · 模拟生成过程与结果</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T2 一键组卷 ================ -->
+    <section class="page" id="page-paper">
+      <div class="page-head">
+        <div>
+          <h1>一键组卷 / 分层作业</h1>
+          <p class="desc">依据知识点与班级学情自动组卷，自动生成 A/B/C 三层与逐题解析</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D3 题库 / D2 知识点图谱 / D7 组卷参数</span>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost btn-sm" id="paperDlPdf" disabled title="先「发送给智能体」生成试卷后可下载 PDF"><span class="iconify" data-icon="ph:file-pdf"></span>下载 PDF</button>
+          <button class="btn btn-ghost btn-sm" id="paperDlDocx" disabled title="先「发送给智能体」生成试卷后可下载 Word"><span class="iconify" data-icon="ph:file-doc"></span>下载 Word</button>
+          <button class="btn btn-primary btn-sm" data-send-agent="paper"><span class="iconify" data-icon="ph:robot"></span>发送给智能体</button>
+        </div>
+      </div>
+
+      <div class="grid g-13">
+        <div class="card card-pad" style="display:flex;flex-direction:column">
+          <div class="card-head" style="padding:0 0 16px;border-bottom:none"><div class="card-title">组卷参数</div></div>
+          <div class="f-row">
+            <div class="field"><label>年级 / 学科</label><select class="select" data-field="subject"><option>五年级 · 数学</option><option>五年级 · 语文</option></select></div>
+            <div class="field"><label>单元范围</label><select class="select" data-field="unit"><option>第四单元 · 简易方程</option><option>第三单元 · 小数除法</option></select></div>
+          </div>
+          <div class="field"><label>难度分布（基于班级掌握度自动推荐）</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="flex:1" class="mini-bar"><i style="width:25%;background:linear-gradient(90deg,var(--green),#34D399)"></i></div><span style="font-size:12px;color:var(--muted)">基础 25%</span>
+              <div style="flex:1" class="mini-bar"><i style="width:50%;background:linear-gradient(90deg,var(--primary),#818CF8)"></i></div><span style="font-size:12px;color:var(--muted)">中等 50%</span>
+              <div style="flex:1" class="mini-bar"><i style="width:25%;background:linear-gradient(90deg,var(--amber),#FBBF24)"></i></div><span style="font-size:12px;color:var(--muted)">拔高 25%</span>
+            </div>
+          </div>
+          <div class="f-row3">
+            <div class="field"><label>选择题</label><input class="input" type="number" data-field="choice" value="6"></div>
+            <div class="field"><label>填空题</label><input class="input" type="number" data-field="blank" value="6"></div>
+            <div class="field"><label>解答题</label><input class="input" type="number" data-field="solve" value="4"></div>
+          </div>
+          <div class="field"><label>分层模式</label>
+            <div class="radio-pill" data-field="layerMode"><span class="on" data-v="A/B/C 分层">A/B/C 分层</span><span data-v="统一卷">统一卷</span><span data-v="个性化组卷">个性化组卷</span></div>
+          </div>
+          <div class="field" style="display:flex;align-items:center;gap:10px"><label style="margin:0;flex:1">自动附答案解析</label><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="field" style="display:flex;align-items:center;gap:10px"><label style="margin:0;flex:1">同步布置到学生端</label><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+          <div style="background:#F7F7FF;border:1px solid #E3E6F5;border-radius:10px;padding:12px 14px;margin:4px 0 14px">
+            <div style="font-size:11px;color:var(--faint);font-weight:700;margin-bottom:7px">学情推荐摘要 · 简易方程</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag tag-lvA">A 层 8 人</span><span class="tag tag-lvB">B 层 26 人</span><span class="tag tag-lvC">C 层 8 人</span></div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.6">薄弱点：<b style="color:var(--rose)">移项变号</b> · 已自动配 2 道搭桥题</div>
+          </div>
+          <div class="cite" style="margin-top:auto"><span class="iconify" data-icon="ph:flow-arrow"></span> 难度推荐依据：班级「简易方程」掌握度 71% · 薄弱知识点自动降级至 B 层</div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-head"><div class="card-title">试卷预览 <span class="chip chip-blue">— 题</span></div>
+              <div class="card-extra"><span class="tag tag-lvA">A 层 — 题</span><span class="tag tag-lvB">B 层 — 题</span><span class="tag tag-lvC">C 层 — 题</span></div></div>
+            <div style="padding:8px 20px 14px">
+              <div class="list-row">
+                <div style="flex:1"><div class="t-cell-main">1. 用含有字母的式子表示：比 x 的 3 倍多 5 的数是 ____。</div><div class="t-cell-sub"><span class="tag tag-lvA" style="margin-right:6px">A 层</span>知识点：用字母表示数 · 来源：教材练习改编</div></div>
+                <span class="iconify" data-icon="ph:check-circle" style="color:var(--green);font-size:18px" title="已配解析"></span>
+              </div>
+              <div class="list-row">
+                <div style="flex:1"><div class="t-cell-main">2. 解方程 3x + 5 = 20，x = ____。</div><div class="t-cell-sub"><span class="tag tag-lvA" style="margin-right:6px">A 层</span>知识点：解简易方程 · 来源：公开题库</div></div>
+                <span class="iconify" data-icon="ph:check-circle" style="color:var(--green);font-size:18px"></span>
+              </div>
+              <div class="list-row">
+                <div style="flex:1"><div class="t-cell-main">3. 农场收土豆，第一天收 a 千克，第二天比第一天多收 12 千克，两天共收 ____ 千克。</div><div class="t-cell-sub"><span class="tag tag-lvB" style="margin-right:6px">B 层</span>情境题（乡镇场景改编）· 来源：合成题</div></div>
+                <span class="iconify" data-icon="ph:check-circle" style="color:var(--green);font-size:18px"></span>
+              </div>
+              <div class="list-row">
+                <div style="flex:1"><div class="t-cell-main">4. 学校图书角有故事书 x 本，科技书比故事书的 2 倍少 8 本，科技书有 ____ 本；当 x=30 时，科技书 ____ 本。</div><div class="t-cell-sub"><span class="tag tag-lvB" style="margin-right:6px">B 层</span>知识点：代入求值 · 来源：自建题库</div></div>
+                <span class="iconify" data-icon="ph:check-circle" style="color:var(--green);font-size:18px"></span>
+              </div>
+              <div class="list-row">
+                <div style="flex:1"><div class="t-cell-main">5. ★ 王叔叔从镇上到县城卖山货，去时每小时行 v 千米，回程每小时行 (v-6) 千米。往返时间相差 0.5 小时，两地相距多少千米？（列方程求解）</div><div class="t-cell-sub"><span class="tag tag-lvC" style="margin-right:6px">C 层</span>综合应用 · 来源：自建题库（标注 CC BY）</div></div>
+                <span class="iconify" data-icon="ph:check-circle" style="color:var(--green);font-size:18px"></span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">分层布置预览 <span class="sub">学生端将看到与掌握度匹配的题目</span></div></div>
+            <div style="padding:18px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+              <div class="plan-card" style="border-color:#c7cbe8;background:#f7f7ff"><span class="pl-flag" style="background:var(--primary)">A 层 · 基础</span>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px">5 题 · 面向掌握度 &lt; 60%</div>
+                <div style="font-size:12.5px;line-height:1.8">8 人 · 巩固「用字母表示数」概念，含搭桥提示题 2 道</div>
+              </div>
+              <div class="plan-card" style="border-color:#a7f3d0;background:#f2fdf8"><span class="pl-flag" style="background:var(--green)">B 层 · 巩固</span>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px">6 题 · 面向掌握度 60%-85%</div>
+                <div style="font-size:12.5px;line-height:1.8">26 人 · 情境题 + 变式题，强化解方程流程</div>
+              </div>
+              <div class="plan-card" style="border-color:#fde68a;background:#fffbf0"><span class="pl-flag" style="background:var(--amber)">C 层 · 挑战</span>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px">5 题 · 面向掌握度 &gt; 85%</div>
+                <div style="font-size:12.5px;line-height:1.8">8 人 · 综合应用题 + 星级挑战题 1 道</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T14 微课脚本 ================ -->
+    <section class="page" id="page-micro">
+      <div class="page-head">
+        <div>
+          <h1>微课脚本生成</h1>
+          <p class="desc">输入课题一键生成分镜脚本与逐字稿，适合录播课与双师课堂</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D1 教材 / D4 模板库</span>
+        </div>
+      </div>
+      <div class="grid g-13">
+        <div class="card card-pad" style="display:flex;flex-direction:column">
+          <div class="field"><label>课题</label><input class="input" data-field="topic" value="分数的基本性质"></div>
+          <div class="f-row">
+            <div class="field"><label>微课时长</label><select class="select" data-field="duration"><option>5 分钟</option><option selected>8 分钟</option><option>10 分钟</option></select></div>
+            <div class="field"><label>授课风格</label><select class="select" data-field="style"><option>亲切乡镇风（多用生活情境）</option><option>标准规范风</option><option>活泼激励风</option></select></div>
+          </div>
+          <div class="field"><label>录制规格</label>
+            <div class="radio-pill" data-field="format"><span class="on" data-v="横屏 16:9">横屏 16:9</span><span data-v="竖屏 9:16">竖屏 9:16</span></div>
+          </div>
+          <div class="field" style="display:flex;align-items:center;gap:10px"><label style="margin:0;flex:1">生成提词卡</label><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:auto" data-send-agent="micro"><span class="iconify" data-icon="ph:robot"></span> 发送给智能体</button>
+          <div class="cite" style="margin-top:8px"><span class="iconify" data-icon="ph:flow-arrow"></span> 脚本自动结合班级学情，插入生活情境与停顿点</div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-head"><div class="card-title">提词卡模板 <span class="sub">点击模板填充到课题输入</span></div>
+              <div class="card-extra"><span class="chip chip-violet">8 套常用</span></div></div>
+            <div style="padding:12px 16px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px" id="teleprompterTemplates">
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="开场悬念法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvA">开场悬念法</span><span style="font-size:12px;color:var(--muted)">"上周末老师分玉米饼，3 个人分 3 份，6 个人分 6 份，为什么都一样大？"</span></div>
+              </div>
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="生活情境法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvB">生活情境法</span><span style="font-size:12px;color:var(--muted)">"去镇上赶集，妈妈买了 1/2 斤糖果和 2/4 斤糖果，哪袋更多？"</span></div>
+              </div>
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="故事导入法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvC">故事导入法</span><span style="font-size:12px;color:var(--muted)">"老村长分地，把 1 块地平均分成 2 份、4 份、8 份，分到的地一样大吗？"</span></div>
+              </div>
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="问题链提问法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvA">问题链提问法</span><span style="font-size:12px;color:var(--muted)">"1/2 和 2/4 一样大吗？→ 分子分母同时乘几？→ 反过来除几呢？"</span></div>
+              </div>
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="易错点提示法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvB">易错点提示法</span><span style="font-size:12px;color:var(--muted)">"注意：分子分母要同时乘或除以同一个数，0 除外！"</span></div>
+              </div>
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="口诀总结法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvC">口诀总结法</span><span style="font-size:12px;color:var(--muted)">"同乘同除，大小不变；0 要除外，牢记心间。"</span></div>
+              </div>
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="互动停顿法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvA">互动停顿法</span><span style="font-size:12px;color:var(--muted)">"同学们先自己想一想，老师停 8 秒，答案一会儿揭晓。"</span></div>
+              </div>
+              <div class="tp-tpl" data-topic="分数的基本性质" data-tpl="任务驱动法">
+                <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-lvB">任务驱动法</span><span style="font-size:12px;color:var(--muted)">"折一折、涂一涂：把纸平均分成 2 份、4 份、8 份，涂出一样大的部分。"</span></div>
+              </div>
+            </div>
+            <div class="cite" style="margin:0 16px 14px"><span class="iconify" data-icon="ph:lightbulb"></span> 点击模板 → 填入课题输入框并快速发送给智能体</div>
+          </div>
+          <div id="micro-empty" class="card" style="padding:30px;text-align:center;border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span class="iconify" data-icon="ph:video-camera-light" style="font-size:44px;color:#c3c7d4"></span>
+            <p style="font-size:14px;color:var(--muted);margin-top:14px;font-weight:600">生成微课分镜脚本与提词卡</p>
+          </div>
+          <div id="micro-result" style="display:none">
+            <div class="card result-card">
+              <div class="card-head"><div class="card-title">《分数的基本性质》8 分钟微课脚本</div>
+                <div class="card-extra"><button class="btn btn-ghost btn-sm" onclick="toast('已导出脚本 Word')"><span class="iconify" data-icon="ph:download-simple"></span>导出</button></div></div>
+              <div style="padding:18px 20px">
+                <div class="timeline">
+                  <div class="tl-item b-blue"><div class="tl-title">0:00-0:40 · 开场</div><div class="tl-sub">"上周末老师分玉米饼，3 个人分 3 份，6 个人分 6 份，为什么都一样大？" 悬念式开场，屏幕：玉米饼切分动画</div><div class="tl-time">镜头：中景 · 提词卡见脚本</div></div>
+                  <div class="tl-item b-green"><div class="tl-title">0:40-3:20 · 探究</div><div class="tl-sub">用折纸演示 1/2 = 2/4 = 4/8；引导发现"分子分母同乘同除一个数，大小不变"</div><div class="tl-time">镜头：俯拍手部特写</div></div>
+                  <div class="tl-item b-amber"><div class="tl-title">3:20-5:50 · 练习</div><div class="tl-sub">3 道随堂练习（呼应乡镇集市称重情境），每题停顿 8 秒供学生口答</div><div class="tl-time">镜头：画中画题目</div></div>
+                  <div class="tl-item b-gray"><div class="tl-title">5:50-8:00 · 总结</div><div class="tl-sub">口诀"同乘同除，大小不变" + 布置家庭小实验：观察家中分菜</div><div class="tl-time">镜头：正面近景</div></div>
+                </div>
+                <div class="cite" style="margin-top:14px"><span class="iconify" data-icon="ph:book-open"></span> 情境素材参考：人教版三年级下册「分数的初步认识」配套教学情境库</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T5 AI 教研员 ================ -->
+    <section class="page" id="page-researcher">
+      <div class="page-head">
+        <div>
+          <h1>AI 教研员</h1>
+          <p class="desc">教案点评、讲题话术、教学建议三位一体 — 依据教研规则库与教材给出专业建议</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D5 教研规则库 / D1 教材 / D7 教案</span>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div style="padding:14px 18px"><div class="tabs" id="researcherTabs">
+          <button class="on" onclick="switchResTab(0)"><span class="iconify" data-icon="ph:clipboard-text" style="vertical-align:-2px"></span> 教案点评</button>
+          <button onclick="switchResTab(1)"><span class="iconify" data-icon="ph:chats" style="vertical-align:-2px"></span> 讲题话术</button>
+          <button onclick="switchResTab(2)"><span class="iconify" data-icon="ph:lightbulb" style="vertical-align:-2px"></span> 教学建议</button>
+        </div></div>
+      </div>
+
+      <!-- 教案点评 -->
+      <div class="res-tab" id="resTab0">
+        <div class="grid g-31">
+          <div class="card card-pad">
+            <div class="field"><label>粘贴教案内容</label><textarea class="input" data-field="sourceContent" style="min-height:220px">【导入】复习上节课内容 5 分钟。
+【新授】讲解方程概念 20 分钟，例题 2 道。
+【练习】学生做练习册 15 分钟。
+【总结】布置作业。</textarea></div>
+            <button class="btn btn-primary" style="width:100%" data-send-agent="res0"><span class="iconify" data-icon="ph:robot"></span> 发送给智能体</button>
+            <div class="cite" style="margin-top:14px"><span class="iconify" data-icon="ph:database"></span> 点评依据：2022 版课标 + 教研规则库 128 条规则（版本 v3.2）</div>
+          </div>
+          <div>
+            <div id="res0-empty" class="card" style="padding:30px;text-align:center;border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span class="iconify" data-icon="ph:clipboard-text-light" style="font-size:44px;color:#c3c7d4"></span>
+              <p style="font-size:14px;color:var(--muted);margin-top:14px;font-weight:600">粘贴教案，获取教研员点评</p>
+            </div>
+            <div id="res0-result" style="display:none">
+              <div class="card result-card">
+                <div class="card-head"><div class="card-title">点评结果 <span class="chip chip-green">综合 82 分</span></div></div>
+                <div style="padding:18px 20px">
+                  <div class="grid g2" style="gap:12px;margin-bottom:16px">
+                    <div style="background:var(--green-soft);border-radius:12px;padding:13px 15px"><div style="font-size:12px;font-weight:700;color:#047857;margin-bottom:7px">做得好的</div><div style="font-size:12.5px;color:#4b5162;line-height:1.7">环节完整、练习时间充足，符合乡镇课堂学情</div></div>
+                    <div style="background:var(--amber-soft);border-radius:12px;padding:13px 15px"><div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:7px">改进建议</div><div style="font-size:12.5px;color:#4b5162;line-height:1.7">① 导入过长（5 分钟），建议压缩至 2 分钟；② 新授缺乏情境任务，建议用"分玉米饼"生活情境；③ 无分层练习设计</div></div>
+                  </div>
+                  <div class="cite"><span class="iconify" data-icon="ph:lightbulb"></span> 可点击 <b>「一键采纳」</b> 将建议写回教案 → <button class="btn btn-primary btn-sm" style="margin-left:6px" onclick="toast('改进建议已写入教案')">一键采纳</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 讲题话术 -->
+      <div class="res-tab" id="resTab1" style="display:none">
+        <div class="grid g-31">
+          <div class="card card-pad">
+            <div class="field"><label>选择题目</label>
+              <div class="list-row" style="border:1.5px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer" onclick="togglePick(this)">
+                <div style="flex:1"><div class="t-cell-main">x + 2x + 5 = 26，求 x</div><div class="t-cell-sub">解方程 · 班级掌握度 71%</div></div>
+                <span class="iconify" data-icon="ph:circle" style="color:#c3c7d4;font-size:17px" data-ico></span>
+              </div>
+              <div class="list-row" style="border:1.5px solid var(--border);border-radius:12px;cursor:pointer" onclick="togglePick(this)">
+                <div style="flex:1"><div class="t-cell-main">一块长方形菜地周长 48 米，长是宽的 2 倍</div><div class="t-cell-sub">列方程 · 薄弱知识点</div></div>
+                <span class="iconify" data-icon="ph:circle" style="color:#c3c7d4;font-size:17px" data-ico></span>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%" data-send-agent="res1"><span class="iconify" data-icon="ph:robot"></span> 发送给智能体</button>
+          </div>
+          <div>
+            <div id="res1-empty" class="card" style="padding:30px;text-align:center;border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span class="iconify" data-icon="ph:chats-light" style="font-size:44px;color:#c3c7d4"></span>
+              <p style="font-size:14px;color:var(--muted);margin-top:14px;font-weight:600">选择题目，生成苏格拉底式讲题话术</p>
+            </div>
+            <div id="res1-result" style="display:none">
+              <div class="card result-card">
+                <div class="card-head"><div class="card-title">苏格拉底式讲题话术 <span class="chip chip-blue">不给答案 · 引导思考</span></div></div>
+                <div style="padding:18px 20px">
+                  <div class="timeline">
+                    <div class="tl-item b-blue"><div class="tl-title">第 1 问 · 找未知</div><div class="tl-sub">"读完题，哪个量是我们不知道的？能不能先给它一个名字？"（引导设 x）</div></div>
+                    <div class="tl-item b-green"><div class="tl-title">第 2 问 · 找关系</div><div class="tl-sub">"周长 48 米和长、宽之间藏着什么等式？用手指比划一下长方形的边。"</div></div>
+                    <div class="tl-item b-amber"><div class="tl-title">第 3 问 · 列方程</div><div class="tl-sub">"把长换成 2 倍的宽，这个等式还能不能写得下去？"（留白 10 秒）</div></div>
+                    <div class="tl-item b-gray"><div class="tl-title">第 4 问 · 检验</div><div class="tl-sub">"解出来之后，怎么知道对不对？把答案代回去看看。"</div></div>
+                  </div>
+                  <div class="cite" style="margin-top:14px"><span class="iconify" data-icon="ph:database"></span> 话术基于认知诊断：该生「列方程建模」错因标签为"未能识别等量关系"</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 教学建议 -->
+      <div class="res-tab" id="resTab2" style="display:none">
+        <div class="card result-card">
+          <div class="card-head"><div class="card-title">本周教学建议 <span class="chip chip-blue">基于班级学情生成</span></div>
+            <div class="card-extra"><button class="btn btn-primary btn-sm" onclick="toast('建议已加入备课待办')"><span class="iconify" data-icon="ph:check"></span> 加入备课待办</button></div></div>
+          <div style="padding:18px 20px">
+            <div class="list-row">
+              <div class="row-icon" style="background:var(--rose-soft);color:var(--rose)"><span class="iconify" data-icon="ph:warning-circle"></span></div>
+              <div style="flex:1"><div class="t-cell-main">「统计与可能性」掌握度 58%，建议本周安排 1 节复习课</div><div class="t-cell-sub">依据：16 名学生在概率题连续失分 · 置信度 94%</div></div>
+              <button class="btn btn-ghost btn-sm" onclick="toast('已生成复习课教案草稿')">生成复习课</button>
+            </div>
+            <div class="list-row">
+              <div class="row-icon" style="background:var(--amber-soft);color:var(--amber)"><span class="iconify" data-icon="ph:users"></span></div>
+              <div style="flex:1"><div class="t-cell-main">8 名 A 层学生建议开展「方程小讲师」同伴互助</div><div class="t-cell-sub">依据：掌握度分布双峰 · 教研规则库「分层互助」规则</div></div>
+              <button class="btn btn-ghost btn-sm" onclick="toast('已生成互助分组方案')">分组方案</button>
+            </div>
+            <div class="list-row">
+              <div class="row-icon" style="background:var(--green-soft);color:var(--green)"><span class="iconify" data-icon="ph:chart-line-up"></span></div>
+              <div style="flex:1"><div class="t-cell-main">「小数乘除法」连续 3 周 >90%，可压缩课时转向薄弱单元</div><div class="t-cell-sub">依据：知识点掌握度趋势 · 课标课时建议</div></div>
+              <button class="btn btn-ghost btn-sm" onclick="toast('已生成课时调整建议')">调整建议</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T15 集体备课 ================ -->
+    <section class="page" id="page-collab">
+      <div class="page-head">
+        <div>
+          <h1>线上集体备课</h1>
+          <p class="desc">与同年级组教师在线共享教案、协同批注，解决村小"一人一科组"难题</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D4 教案模板 / 组内共享教案</span>
+        </div>
+        <div class="head-actions"><button class="btn btn-primary btn-sm" onclick="openPrepWiz()"><span class="iconify" data-icon="ph:plus"></span> 发起集体备课</button></div>
+      </div>
+      <div class="grid g3" style="margin-bottom:18px" id="collabGrid">
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">青石镇 · 五年级数学组</div>
+            <div class="card-extra"><span class="chip chip-green">进行中</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px">《用字母表示数》第 2 稿</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">李老师补充了 3 道乡镇生活情境题 · 王老师修订了分层练习设计</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar-stack"><span class="a" style="background:#4F46E5">王</span><span class="a" style="background:#10B981">李</span><span class="a" style="background:#F59E0B">陈</span><span class="a more">+2</span></div>
+              <span style="font-size:11.5px;color:var(--faint)">4 人已协作</span>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已加入备课')">加入</button>
+            </div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">跨校 · 科学教研组</div>
+            <div class="card-extra"><span class="chip chip-blue">待评议</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px">《杠杆的秘密》实验课设计</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">3 所村小联合备课 · 已收到 5 条批注，其中 2 条待处理</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar-stack"><span class="a" style="background:#8B5CF6">赵</span><span class="a" style="background:#0EA5E9">孙</span><span class="a more">+4</span></div>
+              <span style="font-size:11.5px;color:var(--faint)">6 人已协作</span>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开评议详情')">评议</button>
+            </div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">模板：单元整体教学设计</div>
+            <div class="card-extra"><span class="chip chip-gray">模板</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px">数学大单元备课模板 v2</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px">含单元分析、课标对接、跨科融合框架 · 一师多科可直接套用</div>
+            <button class="btn btn-ghost btn-sm" onclick="toast('模板已套用到当前教案')"><span class="iconify" data-icon="ph:copy"></span> 套用模板</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">协作动态</div></div>
+        <div style="padding:18px 20px">
+          <div class="timeline" id="collabTimeline">
+            <div class="tl-item b-green"><div class="tl-title">李红梅 补充了情境题</div><div class="tl-sub">"王家湾集市的称重问题"已加入《用字母表示数》第 3 题</div><div class="tl-time">10 分钟前 · 青石镇中心小学</div></div>
+            <div class="tl-item b-blue"><div class="tl-title">陈建军 完成教案批注</div><div class="tl-sub">对「分层练习」环节提出 2 点建议，已被采纳 1 点</div><div class="tl-time">2 小时前 · 双桥村小学</div></div>
+            <div class="tl-item b-amber"><div class="tl-title">系统提示 · 备课组周会</div><div class="tl-sub">本周五 19:00 线上教研会，AI 教研员已整理 3 份待讨论议题</div><div class="tl-time">今天 · 系统消息</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T12 基本功补强 ================ -->
+    <section class="page" id="page-skills">
+      <div class="page-head">
+        <div>
+          <h1>教师基本功补强</h1>
+          <p class="desc">针对乡村教师"一人多科、培训机会少"的现状，提供可自学的分项训练计划</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D5 教研规则库 → 训练建议</span>
+        </div>
+        <div class="head-actions">
+          <span class="chip chip-green" id="skillChip"><span class="iconify" data-icon="ph:check-circle"></span>已完成诊断 · 方案已生成</span>
+          <button class="btn btn-primary btn-sm" data-send-agent="skills"><span class="iconify" data-icon="ph:robot"></span>交给智能体</button>
+          <button class="btn btn-ghost btn-sm" onclick="openSkillWiz()"><span class="iconify" data-icon="ph:compass"></span>重新诊断</button>
+        </div>
+      </div>
+      <div class="grid g-31" style="margin-bottom:18px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">基本功诊断雷达 <span class="sub">由诊断作答实时生成</span></div></div>
+          <div style="padding:12px 16px;height:268px" id="skillRadar"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">本周训练计划 <span class="chip chip-green">已连续打卡 12 天</span></div></div>
+          <div style="padding:10px 20px 16px" id="skillPlan">
+            <div class="list-row" onclick="toast('打开普通话训练 · 已标记完成')">
+              <div class="row-icon" style="background:var(--green-soft);color:var(--green)"><span class="iconify" data-icon="ph:check-circle"></span></div>
+              <div style="flex:1"><div class="t-cell-main">普通话 · 平翘舌专项（第 3 天）</div><div class="t-cell-sub">AI 评测得分 86 → 92 分 · 进步 +6</div></div>
+              <span class="chip chip-green">完成</span>
+            </div>
+            <div class="list-row" onclick="toast('打开粉笔字训练')">
+              <div class="row-icon" style="background:var(--primary-soft);color:var(--primary)"><span class="iconify" data-icon="ph:chalkboard-teacher"></span></div>
+              <div style="flex:1"><div class="t-cell-main">粉笔字 · 楷书结构（今日）</div><div class="t-cell-sub">15 分钟 · 含 3 个示范视频</div></div>
+              <span class="chip chip-blue">今日待练</span>
+            </div>
+            <div class="list-row">
+              <div class="row-icon" style="background:var(--amber-soft);color:var(--amber)"><span class="iconify" data-icon="ph:microphone"></span></div>
+              <div style="flex:1"><div class="t-cell-main">课堂语言 · 提问技巧微课</div><div class="t-cell-sub">教研规则库精选 · 12 分钟</div></div>
+              <span class="chip chip-amber">明天</span>
+            </div>
+            <div class="list-row">
+              <div class="row-icon" style="background:var(--violet-soft);color:var(--violet)"><span class="iconify" data-icon="ph:presentation"></span></div>
+              <div style="flex:1"><div class="t-cell-main">多媒体课件制作 · 直播课</div><div class="t-cell-sub">周五 20:00 · 双桥村小同步</div></div>
+              <span class="chip chip-gray">周五</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">成长档案 <span class="sub">训练数据自动沉淀</span></div></div>
+        <div style="padding:16px 20px;display:flex;gap:26px;flex-wrap:wrap">
+          <div style="text-align:center"><div class="mono" style="font-size:24px;color:var(--primary)">12<small style="font-size:12px;color:var(--faint)"> 天</small></div><div style="font-size:11.5px;color:var(--muted)">连续打卡</div></div>
+          <div style="text-align:center"><div class="mono" style="font-size:24px;color:var(--green)">+18<small style="font-size:12px;color:var(--faint)"> 分</small></div><div style="font-size:11.5px;color:var(--muted)">普通话评测提升</div></div>
+          <div style="text-align:center"><div class="mono" style="font-size:24px;color:var(--amber)">4<small style="font-size:12px;color:var(--faint)"> 项</small></div><div style="font-size:11.5px;color:var(--muted)">技能达"良好"以上</div></div>
+          <div style="text-align:center"><div class="mono" style="font-size:24px;color:var(--violet)">3<small style="font-size:12px;color:var(--faint)"> 枚</small></div><div style="font-size:11.5px;color:var(--muted)">技能徽章</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T6 教学资源库 ================ -->
+    <section class="page" id="page-library">
+      <div class="page-head">
+        <div>
+          <h1>教学资源库</h1>
+          <p class="desc">教材、题库、教案、课件统一入库管理，每份资源标注来源与授权方式</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D1 教材 / D3 题库 / D4 模板（均标注授权）</span>
+        </div>
+        <div class="head-actions"><button class="btn btn-primary btn-sm" onclick="toast('已打开资源上传')"><span class="iconify" data-icon="ph:upload-simple"></span> 上传资源</button></div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div style="padding:14px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div class="tb-search" style="max-width:340px;flex:1"><span class="iconify" data-icon="ph:magnifying-glass"></span><span>搜索资源、知识点、作者…</span></div>
+          <div class="radio-pill">
+            <span class="on">全部</span><span onclick="makePill(this)">教案</span><span onclick="makePill(this)">课件</span><span onclick="makePill(this)">习题</span><span onclick="makePill(this)">视频</span>
+          </div>
+          <div class="radio-pill">
+            <span class="on">全部授权</span><span onclick="makePill(this)">公开领域</span><span onclick="makePill(this)">自建</span><span onclick="makePill(this)">CC BY</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid g4">
+        <div class="res-card"><div class="res-cover" style="background:linear-gradient(135deg,#EEF0FF,#E0E7FF)"><span class="iconify" data-icon="ph:file-text" style="color:var(--primary)"></span><span class="type tag tag-lvA">教案</span></div>
+          <div class="res-body"><div class="res-title">《用字母表示数》教学设计（含分层练习）</div>
+            <div class="res-meta"><span class="iconify" data-icon="ph:user"></span> 王秀兰 <span style="margin-left:auto">2026-08-12</span></div>
+            <div class="res-meta"><span class="tag tag-doc">自建</span><span class="chip chip-green" style="margin-left:auto">已下载 128</span></div></div></div>
+        <div class="res-card"><div class="res-cover" style="background:linear-gradient(135deg,#E7F9F2,#D1FAE5)"><span class="iconify" data-icon="ph:presentation-chart" style="color:var(--green)"></span><span class="type tag tag-lvB">课件</span></div>
+          <div class="res-body"><div class="res-title">五年级下册全册课件包（人教版）</div>
+            <div class="res-meta"><span class="iconify" data-icon="ph:user"></span> 县教研室共享 <span style="margin-left:auto">2026-07-30</span></div>
+            <div class="res-meta"><span class="tag tag-ppt">公开领域</span><span class="chip chip-amber" style="margin-left:auto">12 套</span></div></div></div>
+        <div class="res-card"><div class="res-cover" style="background:linear-gradient(135deg,#FEF3DC,#FDE68A55)"><span class="iconify" data-icon="ph:exam" style="color:var(--amber)"></span><span class="type tag tag-lvC">习题</span></div>
+          <div class="res-body"><div class="res-title">简易方程 · 分层题库（A/B/C 三层 120 题）</div>
+            <div class="res-meta"><span class="iconify" data-icon="ph:user"></span> 自建 <span style="margin-left:auto">2026-08-01</span></div>
+            <div class="res-meta"><span class="tag tag-xls">CC BY</span><span class="chip chip-blue" style="margin-left:auto">已用于 6 个班</span></div></div></div>
+        <div class="res-card"><div class="res-cover" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD)"><span class="iconify" data-icon="ph:video" style="color:var(--sky)"></span><span class="type tag tag-video">视频</span></div>
+          <div class="res-body"><div class="res-title">微课：分数的基本性质（8 分钟版）</div>
+            <div class="res-meta"><span class="iconify" data-icon="ph:user"></span> 王秀兰 <span style="margin-left:auto">2026-08-10</span></div>
+            <div class="res-meta"><span class="tag tag-doc">自建</span><span class="chip chip-rose" style="margin-left:auto">播放 342</span></div></div></div>
+      </div>
+    </section>
+
+    <!-- ================ T7 拍照转教案 ================ -->
+    <section class="page" id="page-ocr">
+      <div class="page-head">
+        <div>
+          <h1>手写教案拍照转电子</h1>
+          <p class="desc">手写教案拍照 → OCR 识别 → 结构化电子教案，可继续编辑与共享</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：教师手写图片（OCR）→ 电子教案</span>
+        </div>
+      </div>
+      <div class="grid g-13">
+        <div class="card card-pad">
+          <div class="upload-zone" onclick="toast('原型演示：已模拟选择图片')">
+            <span class="iconify" data-icon="ph:camera"></span>
+            <p>点击拍照或拖拽手写教案图片</p>
+            <span>支持 jpg / png · 单页或多页连续识别</span>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button class="btn btn-primary" style="flex:1" data-send-agent="ocr"><span class="iconify" data-icon="ph:robot"></span> 发送给智能体</button>
+            <button class="btn btn-ghost" onclick="toast('已演示示例图片')"><span class="iconify" data-icon="ph:images"></span> 使用示例</button>
+          </div>
+        </div>
+        <div>
+          <div id="ocr-empty" class="card" style="padding:30px;text-align:center;border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span class="iconify" data-icon="ph:scan-light" style="font-size:44px;color:#c3c7d4"></span>
+            <p style="font-size:14px;color:var(--muted);margin-top:14px;font-weight:600">识别结果将在此展示</p>
+            <p style="font-size:12px;color:var(--faint);margin-top:6px">原型演示 · 模拟手写体 OCR 识别效果</p>
+          </div>
+          <div id="ocr-result" style="display:none">
+            <div class="card result-card">
+              <div class="card-head"><div class="card-title">识别结果 <span class="chip chip-green">识别率 97.2%</span></div>
+                <div class="card-extra"><button class="btn btn-primary btn-sm" onclick="toast('已转换为电子教案并入库')"><span class="iconify" data-icon="ph:check"></span> 转为电子教案</button></div></div>
+              <div style="padding:18px 20px">
+                <div class="grid g2" style="gap:14px;margin-bottom:16px">
+                  <div style="border:1px dashed #d5d8ef;border-radius:12px;padding:14px;background:#fafbff">
+                    <div style="font-size:11px;font-weight:700;color:var(--faint);margin-bottom:8px">手写原稿（模拟）</div>
+                    <div style="font-family:'Noto Serif SC',serif;font-size:12.5px;line-height:2.1;color:#6b7280;writing-mode:horizontal-tb">§ 课题：多边形面积<br>① 复习长方形公式 5min<br>② 割补法演示平行四边形<br>③ 学生剪拼操作<br>④ 公式推导 S=ah</div>
+                  </div>
+                  <div style="background:#f7f7ff;border:1px solid #e5e6f8;border-radius:12px;padding:14px">
+                    <div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:8px">结构化电子教案</div>
+                    <div style="font-size:12.5px;line-height:2;color:#4b5162">
+                      <b>课题：</b>多边形面积（平行四边形）<br>
+                      <b>导入：</b>复习长方形面积公式（5 分钟）<br>
+                      <b>新授：</b>割补法演示平行四边形面积（15 分钟）<br>
+                      <b>活动：</b>学生剪拼操作验证（10 分钟）<br>
+                      <b>结论：</b>S = ah 公式推导（10 分钟）
+                    </div>
+                  </div>
+                </div>
+                <div class="cite"><span class="iconify" data-icon="ph:warning"></span> 识别内容已自动对齐教材章节，<b>请核对</b> 公式与课时安排后入库</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T9 家长会材料 ================ -->
+    <section class="page" id="page-parentmeet">
+      <div class="page-head">
+        <div>
+          <h1>家长会材料 / 发言稿</h1>
+          <p class="desc">结合班级学情数据自动生成家长会发言稿，附带数据可视化图表页</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D4 模板 / D7 输入 + S3 班级学情</span>
+        </div>
+        <div class="head-actions"><button class="btn btn-primary btn-sm" data-send-agent="parentmeet"><span class="iconify" data-icon="ph:robot"></span> 交给智能体</button></div>
+      </div>
+      <div class="grid g-31">
+        <div class="card card-pad">
+          <div class="field"><label>家长会主题</label><input class="input" data-field="theme" value="五年级（1）班 · 期中家长会"></div>
+          <div class="f-row">
+            <div class="field"><label>发言时长</label><select class="select" data-field="duration"><option>10 分钟</option><option selected>15 分钟</option><option>20 分钟</option></select></div>
+            <div class="field"><label>参会群体</label><select class="select" data-field="audience"><option>含大量务工/祖辈家长</option><option>本地务农家长为主</option></select></div>
+          </div>
+          <div class="field"><label>重点内容（可多选）</label>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:#4b5162;cursor:pointer"><input type="checkbox" checked data-field="kp1" value="班级学情总览（数据图表）" style="accent-color:var(--primary);width:15px;height:15px"> 班级学情总览（数据图表）</label>
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:#4b5162;cursor:pointer"><input type="checkbox" checked data-field="kp2" value="进步学生表扬名单" style="accent-color:var(--primary);width:15px;height:15px"> 进步学生表扬名单</label>
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:#4b5162;cursor:pointer"><input type="checkbox" checked data-field="kp3" value="家庭教育协作建议" style="accent-color:var(--primary);width:15px;height:15px"> 家庭教育协作建议</label>
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:#4b5162;cursor:pointer"><input type="checkbox" data-field="kp4" value="安全与心理关怀提醒" style="accent-color:var(--primary);width:15px;height:15px"> 安全与心理关怀提醒</label>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" data-send-agent="parentmeet"><span class="iconify" data-icon="ph:robot"></span> 发送给智能体</button>
+        </div>
+        <div>
+          <div id="pm-empty" class="card" style="padding:30px;text-align:center;border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span class="iconify" data-icon="ph:megaphone-light" style="font-size:44px;color:#c3c7d4"></span>
+            <p style="font-size:14px;color:var(--muted);margin-top:14px;font-weight:600">设置后生成发言稿与配套图表页</p>
+          </div>
+          <div id="pm-result" style="display:none">
+            <div class="card result-card">
+              <div class="card-head"><div class="card-title">家长会发言稿（15 分钟版）</div>
+                <div class="card-extra"><button class="btn btn-ghost btn-sm" onclick="toast('发言稿已导出')"><span class="iconify" data-icon="ph:download-simple"></span>导出</button></div></div>
+              <div style="padding:18px 20px">
+                <div class="timeline">
+                  <div class="tl-item b-blue"><div class="tl-title">开场（1 min）</div><div class="tl-sub">感谢各位家长，尤其是从外地赶回来的爸爸妈妈。今天重点聊聊孩子们这一个半学期的成长。</div></div>
+                  <div class="tl-item b-green"><div class="tl-title">班级学情（4 min）</div><div class="tl-sub">42 名同学平均掌握度从 71% 提升到 78.6%；本周作答 1,286 次，创本学期新高。</div></div>
+                  <div class="tl-item b-amber"><div class="tl-title">进步表彰（3 min）</div><div class="tl-sub">点名表扬李春兰（+21 分）、杨伟（方程专项满分）等 8 名进步显著的同学。</div></div>
+                  <div class="tl-item b-gray"><div class="tl-title">家校协作（5 min）</div><div class="tl-sub">① 每天 15 分钟亲子共读；② 关注孩子情绪变化；③ 外出务工家长多用语音留言陪伴。</div></div>
+                  <div class="tl-item b-rose"><div class="tl-title">收尾（2 min）</div><div class="tl-sub">安全教育提醒 + 会后一对一面谈预约（已生成预约表）。</div></div>
+                </div>
+                <div class="cite" style="margin-top:14px"><span class="iconify" data-icon="ph:chart-bar"></span> 附：3 张班级数据图表已生成，可直接投屏展示</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T10 开学材料包 ================ -->
+    <section class="page" id="page-backtoschool">
+      <div class="page-head">
+        <div>
+          <h1>开学材料包</h1>
+          <p class="desc">开学第一课、班规、学期计划、安全告知书等一键成套生成</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D4 模板库（版本化）</span>
+        </div>
+        <div class="head-actions"><button class="btn btn-primary btn-sm" data-send-agent="backtoschool"><span class="iconify" data-icon="ph:robot"></span> 交给智能体</button><button class="btn btn-ghost btn-sm" onclick="toast('材料包已打包下载（6 份）')"><span class="iconify" data-icon="ph:download-simple"></span> 一键打包</button></div>
+      </div>
+      <div class="grid g3">
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">开学第一课课件</div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12.5px;color:var(--muted);line-height:1.8;margin-bottom:12px">"新学期，种下希望的种子" 主题 · 18 页 · 含班级愿景互动环节</div>
+            <div style="display:flex;align-items:center;gap:10px"><span class="tag tag-ppt">PPT</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开预览')">预览</button></div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">班级公约</div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12.5px;color:var(--muted);line-height:1.8;margin-bottom:12px">8 条公约已结合班级学情生成 · 含"上课认真听、作业不抄袭、劳动最光荣"</div>
+            <div style="display:flex;align-items:center;gap:10px"><span class="tag tag-doc">Word</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开编辑')">编辑</button></div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">学期教学计划</div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12.5px;color:var(--muted);line-height:1.8;margin-bottom:12px">依据课标课时建议自动排布 20 周教学进度 · 标注薄弱单元加课时</div>
+            <div style="display:flex;align-items:center;gap:10px"><span class="tag tag-xls">表格</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开进度表')">查看</button></div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">安全告知书</div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12.5px;color:var(--muted);line-height:1.8;margin-bottom:12px">防溺水、交通、校园欺凌等 6 类安全事项 · 家长签字回执联已排版</div>
+            <div style="display:flex;align-items:center;gap:10px"><span class="tag tag-doc">Word</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开预览')">预览</button></div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">致家长的一封信</div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12.5px;color:var(--muted);line-height:1.8;margin-bottom:12px">含大字版 · 务工家长远程沟通渠道介绍 · 附周报订阅二维码</div>
+            <div style="display:flex;align-items:center;gap:10px"><span class="tag tag-doc">Word</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开预览')">预览</button></div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">学生信息表</div></div>
+          <div style="padding:16px 20px">
+            <div style="font-size:12.5px;color:var(--muted);line-height:1.8;margin-bottom:12px">42 人信息已同步 · 特殊学生关怀标记（留守 / 单亲 / 低保）</div>
+            <div style="display:flex;align-items:center;gap:10px"><span class="tag tag-xls">表格</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast('已打开名单')">查看</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================ T11 留守儿童沟通 ================ -->
+    <section class="page" id="page-leftbehind">
+      <div class="page-head">
+        <div>
+          <h1>留守儿童沟通技巧</h1>
+          <p class="desc">基于教育沟通知识库的场景化话术，帮助教师与留守学生及其监护人有效沟通</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D5 沟通知识库（与家长端 P4/P5 共用）</span>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div style="padding:14px 18px"><div class="radio-pill" style="max-width:640px">
+          <span class="on" onclick="makePill(this)">视频通话开场</span><span onclick="makePill(this)">孩子情绪低落</span><span onclick="makePill(this)">学习督促</span><span onclick="makePill(this)">监护人（祖辈）沟通</span><span onclick="makePill(this)">敏感话题</span>
+        </div></div>
+      </div>
+      <div class="grid g3">
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">视频通话开场话术</div><div class="card-extra"><span class="chip chip-green">最常用</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="background:#f7f7ff;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.9;color:#4b5162;border-left:3px solid var(--primary)">"小军，上周你说想给爸爸看你的数学进步，这周我们特意录了 3 道你全对的题，咱们现在一起给爸爸讲讲？"</div>
+            <div style="font-size:12px;color:var(--faint);margin-top:12px;line-height:1.7">要点：先报喜再谈事 · 让孩子有"展示感" · 避免开场就问成绩</div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">孩子情绪低落时</div><div class="card-extra"><span class="chip chip-rose">敏感场景</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="background:#fde8ec;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.9;color:#4b5162;border-left:3px solid var(--rose)">"老师注意到你今天做题时有点安静。不想说也没关系，我们先把这页收起来。你想不想去操场看会儿云？"</div>
+            <div style="font-size:12px;color:var(--faint);margin-top:12px;line-height:1.7">要点：接纳情绪不追问 · 提供"离开"选项 · 之后单独跟进</div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">学习督促话术</div><div class="card-extra"><span class="chip chip-blue">高频</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="background:#e0f2fe;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.9;color:#4b5162;border-left:3px solid var(--sky)">"昨天那 3 道题你对了 2 道，比上周多对了 1 道！今天咱们挑战同类型的第 4 题，赢了我请你当小老师教同桌。"</div>
+            <div style="font-size:12px;color:var(--faint);margin-top:12px;line-height:1.7">要点：对比自己而非他人 · 给具体小目标 · 赋予角色感</div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">与祖辈监护人沟通</div><div class="card-extra"><span class="chip chip-amber">大字版友好</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="background:#fffbf0;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.9;color:#4b5162;border-left:3px solid var(--amber)">"奶奶您好，小丽这周表现很好。麻烦您每天提醒她：做完作业把书包收好，别的都不用操心，您放心。"</div>
+            <div style="font-size:12px;color:var(--faint);margin-top:12px;line-height:1.7">要点：一句话指令 · 强调"您放心" · 避免专业术语</div>
+          </div>
+        </div>
+        <div class="card card-hover">
+          <div class="card-head"><div class="card-title">敏感话题应对</div><div class="card-extra"><span class="chip chip-violet">低频率</span></div></div>
+          <div style="padding:16px 20px">
+            <div style="background:#f3e8ff;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.9;color:#4b5162;border-left:3px solid var(--violet)">"你想爸爸妈妈的时候，是不是就像胸口有一块小石头？老师小时候也有过。我们把它画出来，再一起想想怎么搬走它？"</div>
+            <div style="font-size:12px;color:var(--faint);margin-top:12px;line-height:1.7">要点：正常化情绪 · 用比喻降低压力 · 后续衔接心理轻提醒</div>
+          </div>
+        </div>
+      </div>
+      <div class="cite" style="margin-top:16px"><span class="iconify" data-icon="ph:hand-heart"></span> 本页话术与家长端「家庭教育指导」「沟通助手」共用同一知识库（D5），内容不重复建设</div>
+    </section>
+
+    <!-- ================ T13 职称材料整理 ================ -->
+    <section class="page" id="page-title">
+      <div class="page-head">
+        <div>
+          <h1>职称材料整理</h1>
+          <p class="desc">上传材料自动分类归档、命名规范、生成目录，让评职称不再手忙脚乱</p>
+          <span class="src-tag"><span class="iconify" data-icon="ph:database"></span>数据来源：D7 教师上传材料</span>
+        </div>
+        <div class="head-actions"><button class="btn btn-primary btn-sm" data-send-agent="title"><span class="iconify" data-icon="ph:robot"></span> 交给智能体</button><button class="btn btn-ghost btn-sm" onclick="toast('目录已生成并导出')"><span class="iconify" data-icon="ph:download-simple"></span> 生成目录</button></div>
+      </div>
+      <div class="grid g-31">
+        <div class="card card-pad">
+          <div class="upload-zone" onclick="toast('原型演示：已模拟上传 14 份材料')" style="padding:34px 20px">
+            <span class="iconify" data-icon="ph:folder-open"></span>
+            <p>拖拽材料至此，或点击选择</p>
+            <span>支持 pdf / jpg / word · 单次最多 50 份</span>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <button class="btn btn-primary" style="flex:1" data-send-agent="title"><span class="iconify" data-icon="ph:robot"></span> 发送给智能体</button>
+            <button class="btn btn-ghost" onclick="toast('已演示示例材料')"><span class="iconify" data-icon="ph:images"></span> 示例</button>
+          </div>
+        </div>
+        <div>
+          <div id="title-empty" class="card" style="padding:30px;text-align:center;border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span class="iconify" data-icon="ph:folder-open-light" style="font-size:44px;color:#c3c7d4"></span>
+            <p style="font-size:14px;color:var(--muted);margin-top:14px;font-weight:600">上传材料后自动分类</p>
+          </div>
+          <div id="title-result" style="display:none">
+            <div class="card result-card">
+              <div class="card-head"><div class="card-title">材料分类结果 <span class="chip chip-green">14 份已归档</span></div></div>
+              <div style="padding:14px 20px">
+                <div class="list-row">
+                  <div class="row-icon" style="background:var(--amber-soft);color:var(--amber)"><span class="iconify" data-icon="ph:medal"></span></div>
+                  <div style="flex:1"><div class="t-cell-main">获奖证书 <span class="chip chip-amber" style="margin-left:8px">4 份</span></div><div class="t-cell-sub">县级优质课二等奖 · 镇级优秀教师 · 教学能手 · 演讲比赛</div></div>
+                  <button class="btn btn-ghost btn-sm" onclick="toast('已打开证书扫描件')">查看</button>
+                </div>
+                <div class="list-row">
+                  <div class="row-icon" style="background:var(--primary-soft);color:var(--primary)"><span class="iconify" data-icon="ph:newspaper"></span></div>
+                  <div style="flex:1"><div class="t-cell-main">论文与课题 <span class="chip chip-blue" style="margin-left:8px">3 份</span></div><div class="t-cell-sub">《乡镇小班化教学实践》发表 · 县级课题结题报告 · 教案集</div></div>
+                  <button class="btn btn-ghost btn-sm" onclick="toast('已打开论文扫描件')">查看</button>
+                </div>
+                <div class="list-row">
+                  <div class="row-icon" style="background:var(--green-soft);color:var(--green)"><span class="iconify" data-icon="ph:graduation-cap"></span></div>
+                  <div style="flex:1"><div class="t-cell-main">继续教育 <span class="chip chip-green" style="margin-left:8px">5 份</span></div><div class="t-cell-sub">国培结业证书 · 普通话二甲 · 信息技术 2.0 · 远程研修 2 期</div></div>
+                  <button class="btn btn-ghost btn-sm" onclick="toast('已打开继续教育材料')">查看</button>
+                </div>
+                <div class="list-row">
+                  <div class="row-icon" style="background:var(--violet-soft);color:var(--violet)"><span class="iconify" data-icon="ph:clipboard-text"></span></div>
+                  <div style="flex:1"><div class="t-cell-main">任职与教案 <span class="chip chip-violet" style="margin-left:8px">2 份</span></div><div class="t-cell-sub">近三年教案本 · 班主任任职证明</div></div>
+                  <button class="btn btn-ghost btn-sm" onclick="toast('已打开任职材料')">查看</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span class="iconify" data-icon="ph:check-circle"></span><span id="toastText"></span></div>
+
+<!-- ===== 基本功诊断向导 ===== -->
+<div class="wiz-mask" id="skillWiz">
+  <div class="wiz">
+    <div class="wiz-head">
+      <div class="wiz-ico"><span class="iconify" data-icon="ph:chalkboard-simple"></span></div>
+      <div>
+        <div class="wiz-title">基本功诊断</div>
+        <div class="wiz-sub" id="skillWizSub">第 1 步 · 自评 8 项基本功</div>
+      </div>
+      <span class="wiz-x" onclick="closeSkillWiz()"><span class="iconify" data-icon="ph:x"></span></span>
+    </div>
+    <div class="wiz-steps"><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="wiz-body">
+      <div class="wiz-step on" id="skillStep0">
+        <div class="wiz-tip">选择最真实的自己，不用谦虚——结果只用于生成你的专属训练方案</div>
+        <div class="self-items" id="skillSelfList"></div>
+      </div>
+      <div class="wiz-step" id="skillStep1">
+        <div class="wiz-q">Q1 · 你最习惯的课堂风格是？</div>
+        <div class="opt-cols">
+          <div class="opt-card" data-v="board" onclick="selQ('q1',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:chalkboard-teacher"></span></div><div class="oc-t">板书引导</div><div class="oc-d">一支粉笔走天下</div></div>
+          <div class="opt-card" data-v="media" onclick="selQ('q1',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:presentation"></span></div><div class="oc-t">多媒体演示</div><div class="oc-d">课件 + 视频 + 动画</div></div>
+          <div class="opt-card" data-v="group" onclick="selQ('q1',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:users-three"></span></div><div class="oc-t">小组讨论</div><div class="oc-d">合作探究为主</div></div>
+        </div>
+        <div class="wiz-q" style="margin-top:22px">Q2 · 你平时使用多媒体的频率？</div>
+        <div class="opt-cols">
+          <div class="opt-card" data-v="often" onclick="selQ('q2',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:devices"></span></div><div class="oc-t">每周多次</div><div class="oc-d">课件常态使用</div></div>
+          <div class="opt-card" data-v="some" onclick="selQ('q2',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:desktop"></span></div><div class="oc-t">偶尔使用</div><div class="oc-d">公开课时才用</div></div>
+          <div class="opt-card" data-v="rare" onclick="selQ('q2',this)"><div class="oc-ico"><span class="iconify" data-icon="ph:chalkboard-teacher"></span></div><div class="oc-t">基本不用</div><div class="oc-d">设备条件有限</div></div>
+        </div>
+      </div>
+      <div class="wiz-step" id="skillStep2">
+        <div id="skillScenes"></div>
+        <div class="wiz-gen" id="skillGen">
+          <div class="wiz-gen-ico"><span class="iconify" data-icon="ph:sparkle"></span></div>
+          <div class="wiz-gen-t" id="skillGenT">正在分析你的作答…</div>
+          <div class="wiz-gen-s" id="skillGenS">结合自评与课堂场景偏好，计算 8 项基本功得分</div>
+          <div class="wiz-gen-bar"><i id="skillGenBar"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="wiz-foot">
+      <button class="btn btn-ghost" id="skillPrevBtn" style="visibility:hidden" onclick="skillPrev()">上一步</button>
+      <button class="btn btn-primary" id="skillNextBtn" onclick="skillNext()">下一步</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 集体备课发起向导 ===== -->
+<div class="wiz-mask" id="prepWiz">
+  <div class="wiz">
+    <div class="wiz-head">
+      <div class="wiz-ico"><span class="iconify" data-icon="ph:users-four"></span></div>
+      <div>
+        <div class="wiz-title">发起集体备课</div>
+        <div class="wiz-sub" id="prepWizSub">第 1 步 · 选择课题</div>
+      </div>
+      <span class="wiz-x" onclick="closePrepWiz()"><span class="iconify" data-icon="ph:x"></span></span>
+    </div>
+    <div class="wiz-steps"><i class="on"></i><i></i><i></i></div>
+    <div class="wiz-body">
+      <div class="wiz-step on" id="prepStep0">
+        <div class="wiz-tip">选择本次要研讨的课题</div>
+        <div class="self-items" id="prepTopicList"></div>
+      </div>
+      <div class="wiz-step" id="prepStep1">
+        <div class="wiz-tip">选择参与教师（可多选）</div>
+        <div class="self-items" id="prepTeacherList"></div>
+      </div>
+      <div class="wiz-step" id="prepStep2">
+        <div class="wiz-tip">选择备课模式，系统自动生成分工</div>
+        <div class="opt-cols">
+          <div class="opt-card" data-v="same" onclick="selPrepMode(this)"><div class="oc-ico"><span class="iconify" data-icon="ph:arrows-left-right"></span></div><div class="oc-t">同课异构</div><div class="oc-d">同题不同设计 · 对比研讨</div></div>
+          <div class="opt-card" data-v="main" onclick="selPrepMode(this)"><div class="oc-ico"><span class="iconify" data-icon="ph:user"></span></div><div class="oc-t">主备共享</div><div class="oc-d">一人主备 · 全员共享</div></div>
+          <div class="opt-card" data-v="topic" onclick="selPrepMode(this)"><div class="oc-ico"><span class="iconify" data-icon="ph:lightbulb"></span></div><div class="oc-t">专题研讨</div><div class="oc-d">围绕教学难点深挖</div></div>
+        </div>
+        <div style="margin-top:18px;padding:13px 15px;border-radius:13px;background:#F8FAFD;border:1px solid var(--border)" id="prepPlan">
+          <div style="font-size:12.5px;font-weight:800;color:#0f172a;margin-bottom:8px">分工预览</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9">选择模式后，将按参与教师自动分配：主备人 / 审阅人 / 学情数据支持</div>
+        </div>
+      </div>
+    </div>
+    <div class="wiz-foot">
+      <button class="btn btn-ghost" id="prepPrevBtn" style="visibility:hidden" onclick="prepPrev()">上一步</button>
+      <button class="btn btn-primary" id="prepNextBtn" onclick="prepNext()">下一步</button>
+    </div>
+  </div>
+</div>
+
+
+<script type="module" src="/assets/app/teacher-main.js"></script>
+</body>
+</html>
